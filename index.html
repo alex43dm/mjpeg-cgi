@@ -1,0 +1,59 @@
+<html>
+<head>
+<title>video</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+
+  $('#image_div').append('<img width="640" height="480" border="0" src="http://localhost/mjpeg?action=streem" id="image">');
+  $('#image').load().error(function(){
+    console.log($(this));
+    alert("Error load imge");
+  });
+
+    $("#left").click(function(){
+        $.ajax({url: "http://localhost/mjpeg?action=control&dir=left", success: function(result){
+        }});
+    });
+    $("#up").click(function(){
+        $.ajax({url: "http://localhost/mjpeg?action=control&dir=up", success: function(result){
+        }});
+    });
+    $("#down").click(function(){
+        $.ajax({url: "http://localhost/mjpeg?action=control&dir=down", success: function(result){
+        }});
+    });
+    $("#right").click(function(){
+        $.ajax({url: "http://localhost/mjpeg?action=control&dir=right", success: function(result){
+        }});
+    });
+});
+</script>
+</head>
+<body>
+
+  <header>
+    <h1>CAM#01</h1>
+  </header>
+
+  <nav>
+    <button id="left" name="left" value="left">left</button>
+    <button id="up" name="up" value="up">up</button>
+    <button id="down" name="down" value="down">down</button>
+    <button id="right" name="right" value="right">right</button>
+  </nav>
+
+  <section>
+    <div id="image_div"/>
+<!--
+    <img name="mjpg" src="http://localhost/mjpeg?action=streem" WIDTH=640 HEIGHT=480/>
+-->
+  </section>
+
+<footer>
+Copyright ©AD
+</footer>
+
+</body>
+</html>
+
