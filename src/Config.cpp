@@ -127,7 +127,7 @@ bool Config::Load()
 
         if( (mel = mElem->FirstChildElement("fps")) && (mel->GetText()) )
         {
-            FPS = 1000000 / atoi(mel->GetText());
+            FPS = 1000000 / strtof(mel->GetText(),NULL);
         }
     }
     else

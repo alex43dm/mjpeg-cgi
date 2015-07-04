@@ -133,20 +133,22 @@ void CgiService::run()
     for(;;)
     {
         pthread_mutex_lock(&_pMtx);
-        pthread_cond_broadcast(&_pCondVar);
 
         if(vjpg.size() && i < vjpg.size())
         {
             memcpy(_pBuffer,vjpg[i].c_str(),vjpg[i].size());
             _pLen = vjpg[i].size();
+
+            pthread_cond_broadcast(&_pCondVar);
+
+            i++;
+        }
+        else
+        {
+            i = 0;
         }
 
         pthread_mutex_unlock(&_pMtx);
-
-        if(i <= 65)
-            i++;
-        else
-            i = 0;
 
         usleep(cfg->FPS);
     }
