@@ -119,9 +119,15 @@ bool Config::Load()
         {
             indexFile = mel->GetText();
         }
+
         if( (mel = mElem->FirstChildElement("imagesDir")) && (mel->GetText()) )
         {
             imagesDir = mel->GetText();
+        }
+
+        if( (mel = mElem->FirstChildElement("fps")) && (mel->GetText()) )
+        {
+            FPS = 1000000 / atoi(mel->GetText());
         }
     }
     else

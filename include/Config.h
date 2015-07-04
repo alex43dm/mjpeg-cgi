@@ -12,6 +12,7 @@ public:
     //new params
     std::string SocketPath;
     unsigned ServerThreads;
+    unsigned FPS;
     size_t BufferSize;
 
     int         instanceId;

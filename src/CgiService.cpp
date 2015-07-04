@@ -148,8 +148,7 @@ void CgiService::run()
         else
             i = 0;
 
-        //usleep(500000);
-        sleep(3);
+        usleep(cfg->FPS);
     }
 }
 
