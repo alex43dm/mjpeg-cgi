@@ -21,7 +21,7 @@ depcomp
 install-sh
 ltmain.sh
 m4/
-main.o
+*.o
 missing
 mjpeg-cgi
 src/.deps/

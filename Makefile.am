@@ -6,8 +6,9 @@ src/base64.cpp  \
 src/CgiService.cpp  \
 src/Log.cpp  \
 src/Request.cpp  \
-src/Response.cpp
-
+src/Response.cpp \
+src/Config.cpp \
+src/Server.cpp
 
 INCLUDE=-Iinclude -I/usr/include
 DEBDEP=bash (>= 2.05a-11), awk, procps (>= 1:2.0.7-8), sed (>= 3.02-8), grep (>= 2.4.2-3), coreutils (>= 5.0-5)

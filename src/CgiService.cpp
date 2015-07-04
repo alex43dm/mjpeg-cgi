@@ -49,7 +49,6 @@ CgiService::CgiService(unsigned threadsNumber, const std::string &serverSocketPa
     sigaction(SIGPIPE,&actions,NULL);
 
 
-//    pthread_mutex_init(&CgiService::_pMtx,NULL);
     pthread_cond_init(&_pCondVar,NULL);
 
     pthread_attr_t* attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
