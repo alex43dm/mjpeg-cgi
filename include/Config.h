@@ -23,6 +23,10 @@ public:
     std::string indexFile;
     std::string imagesDir;
 
+    std::string camIp;
+    unsigned camPort;
+    unsigned camJpgLocalPort;
+
 
     static Config* Instance();
     bool LoadConfig(const std::string fName);

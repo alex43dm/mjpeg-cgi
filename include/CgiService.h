@@ -4,15 +4,14 @@
 #include <string>
 
 #include <pthread.h>
-
 #include <fcgiapp.h>
+
+#include "cam.h"
 
 class CgiService
 {
 
 public:
-    pthread_cond_t  _pCondVar;
-    pthread_mutex_t _pMtx;
     int socketId;
     CgiService(unsigned, const std::string &);
     ~CgiService();
@@ -26,9 +25,8 @@ private:
     std::string _pServerSocketPath;
     std::string _pCookieName;
     pthread_t *_pThreads;
-    unsigned char *_pBuffer;
-    size_t _pLen;
     std::string _pIndexHtml;
+    panasonic::cam *c1;
 
     static void SignalHandler(int signum);
 

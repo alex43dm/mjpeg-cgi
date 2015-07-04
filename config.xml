@@ -8,8 +8,16 @@
         <socket_path>/tmp/mjgpg-cgi/sock</socket_path>
         <children>7</children>
         <fps>0.5</fps>
-        <buffersize>10485760</buffersize>
+        <buffersize>65536</buffersize>
         <indexFile>/home/alex/Projects/mjpeg-cgi/index.html</indexFile>
         <imagesDir>/home/alex/Projects/mjpeg-cgi/jpeg</imagesDir>
+
+        <control_port>9999</control_port>
+
+        <camera_port>20480</camera_port>
+        <camera_ip>192.168.2.33</camera_ip>
+
+        <rotator_ip>192.168.0.3</rotator_ip>
+
     </server>
 </root>

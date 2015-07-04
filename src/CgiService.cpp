@@ -25,7 +25,6 @@
 #define THREAD_STACK_SIZE PTHREAD_STACK_MIN + 10 * 1024
 
 CgiService::CgiService(unsigned threadsNumber, const std::string &serverSocketPath):
-    _pMtx(PTHREAD_MUTEX_INITIALIZER),
     _pThreadsNumber(threadsNumber),
     _pServerSocketPath(serverSocketPath)
 {
@@ -49,9 +48,6 @@ CgiService::CgiService(unsigned threadsNumber, const std::string &serverSocketPa
     sigaction(SIGHUP,&actions,NULL);
     sigaction(SIGPIPE,&actions,NULL);
 
-
-    pthread_cond_init(&_pCondVar,NULL);
-
     pthread_attr_t* attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
     pthread_attr_init(attributes);
     pthread_attr_setstacksize(attributes, THREAD_STACK_SIZE);
@@ -70,9 +66,9 @@ CgiService::CgiService(unsigned threadsNumber, const std::string &serverSocketPa
     pthread_attr_destroy(attributes);
     free(attributes);
 
-    _pBuffer = new unsigned char[cfg->BufferSize];
-
     _pIndexHtml = getFileContents(cfg->indexFile);
+
+    c1 = new panasonic::cam(cfg->camIp,cfg->camPort,cfg->camJpgLocalPort);
 }
 
 std::string CgiService::getFileContents(const std::string &filename)
@@ -108,62 +104,24 @@ std::string CgiService::getFileContents(const std::string &filename)
 
 void CgiService::run()
 {
-    DIR *dir;
-    struct dirent *ent;
-    std::vector<std::string> vjpg;
-    unsigned i = 0;
-
-    if ((dir = opendir (cfg->imagesDir.c_str())) != NULL)
+    while(c1->init())
     {
-        while((ent = readdir (dir)) != NULL)
-        {
-            if(std::string(ent->d_name) == "." || std::string(ent->d_name) == "..")continue;
-#ifdef DEBUG
-            printf ("%s\n", ent->d_name);
-#endif // DEBUG
-            vjpg.push_back(getFileContents(cfg->imagesDir+"/"+std::string(ent->d_name)));
-
-            i++;
-        }
-        closedir (dir);
+        sleep(3);
     }
 
-    i = 0;
-   //main loop
-    for(;;)
-    {
-        pthread_mutex_lock(&_pMtx);
-
-        if(vjpg.size() && i < vjpg.size())
-        {
-            memcpy(_pBuffer,vjpg[i].c_str(),vjpg[i].size());
-            _pLen = vjpg[i].size();
-
-            pthread_cond_broadcast(&_pCondVar);
-
-            i++;
-        }
-        else
-        {
-            i = 0;
-        }
-
-        pthread_mutex_unlock(&_pMtx);
-
-        usleep(cfg->FPS);
-    }
+    c1->reciever();
 }
 
 CgiService::~CgiService()
 {
-    pthread_cond_destroy(&_pCondVar);
+    delete c1;
 
-   for(unsigned i = 0; i < _pThreadsNumber; i++)
+    for(unsigned i = 0; i < _pThreadsNumber; i++)
     {
         pthread_join(_pThreads[i], 0);
     }
 
-   delete []_pThreads;
+    delete []_pThreads;
 }
 
 
@@ -258,11 +216,11 @@ void CgiService::ProcessRequest(FCGX_Request *req)
         for(;;)
             try
             {
-                pthread_mutex_lock(&_pMtx);
-                pthread_cond_wait(&_pCondVar,&_pMtx);
-                pthread_mutex_unlock(&_pMtx);
+                pthread_mutex_lock(&c1->Mtx);
+                pthread_cond_wait(&c1->CondVar,&c1->Mtx);
+                pthread_mutex_unlock(&c1->Mtx);
 
-                if(!resps.nextMJPG(_pBuffer,_pLen))
+                if(!resps.nextMJPG(c1->Buffer,c1->Len))
                 {
                     Log::gdb("stream thread: %dl exit",pthread_self());
                     resps.endMJPG();

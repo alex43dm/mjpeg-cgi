@@ -129,6 +129,20 @@ bool Config::Load()
         {
             FPS = static_cast<unsigned>(1000000 / strtof(mel->GetText(),NULL));
         }
+
+        if( (mel = mElem->FirstChildElement("control_port")) && (mel->GetText()) )
+        {
+            camJpgLocalPort = static_cast<unsigned>(atoi(mel->GetText()));
+        }
+
+        if( (mel = mElem->FirstChildElement("camera_ip")) && (mel->GetText()) )
+        {
+            camIp = mel->GetText();
+        }
+        if( (mel = mElem->FirstChildElement("camera_port")) && (mel->GetText()) )
+        {
+            camPort = static_cast<unsigned>(atoi(mel->GetText()));
+        }
     }
     else
     {
