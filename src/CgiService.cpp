@@ -14,6 +14,7 @@
 #include "Response.h"
 #include "Request.h"
 #include "base64.h"
+#include "Config.h"
 
 #include <typeinfo>
 #include <iostream>
@@ -69,9 +70,9 @@ CgiService::CgiService(unsigned threadsNumber, const std::string &serverSocketPa
     pthread_attr_destroy(attributes);
     free(attributes);
 
-    _pBuffer = new unsigned char[1024*1024*10];
+    _pBuffer = new unsigned char[cfg->BufferSize];
 
-    _pIndexHtml = getFileContents("index.html");
+    _pIndexHtml = getFileContents(cfg->indexFile);
 }
 
 std::string CgiService::getFileContents(const std::string &filename)
@@ -112,13 +113,15 @@ void CgiService::run()
     std::vector<std::string> vjpg;
     unsigned i = 0;
 
-    if ((dir = opendir ("jpeg")) != NULL)
+    if ((dir = opendir (cfg->imagesDir.c_str())) != NULL)
     {
         while((ent = readdir (dir)) != NULL)
         {
             if(std::string(ent->d_name) == "." || std::string(ent->d_name) == "..")continue;
+#ifdef DEBUG
             printf ("%s\n", ent->d_name);
-            vjpg.push_back(getFileContents("jpeg/"+std::string(ent->d_name)));
+#endif // DEBUG
+            vjpg.push_back(getFileContents(cfg->imagesDir+"/"+std::string(ent->d_name)));
 
             i++;
         }
@@ -132,8 +135,11 @@ void CgiService::run()
         pthread_mutex_lock(&_pMtx);
         pthread_cond_broadcast(&_pCondVar);
 
-        memcpy(_pBuffer,vjpg[i].c_str(),vjpg[i].size());
-        _pLen = vjpg[i].size();
+        if(vjpg.size() && i < vjpg.size())
+        {
+            memcpy(_pBuffer,vjpg[i].c_str(),vjpg[i].size());
+            _pLen = vjpg[i].size();
+        }
 
         pthread_mutex_unlock(&_pMtx);
 
@@ -247,6 +253,7 @@ void CgiService::ProcessRequest(FCGX_Request *req)
     {
         resps.startMJPG();
 
+        Log::gdb("stream thread: %dl start",pthread_self());
         for(;;)
             try
             {

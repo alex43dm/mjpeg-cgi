@@ -1,3 +1,4 @@
+#include "config.h"
 #include "Log.h"
 #include "Config.h"
 #include "Server.h"

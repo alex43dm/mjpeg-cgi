@@ -19,6 +19,8 @@ public:
     std::string PidFile;
     std::string User;
     std::string Group;
+    std::string indexFile;
+    std::string imagesDir;
 
 
     static Config* Instance();

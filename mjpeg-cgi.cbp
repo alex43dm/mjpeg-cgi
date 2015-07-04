@@ -8,10 +8,11 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="bin/Debug/mjpeg-cgi" prefix_auto="1" extension_auto="1" />
+				<Option output="mjpeg-cgi-dev" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="-c /home/alex/Projects/mjpeg-cgi/config.xml" />
 				<Compiler>
 					<Add option="-g" />
 					<Add directory="include" />
@@ -43,12 +44,14 @@
 			<Add library="pthread" />
 		</Linker>
 		<Unit filename="Makefile.am" />
+		<Unit filename="config.xml" />
 		<Unit filename="configure.ac" />
 		<Unit filename="include/CgiService.h" />
 		<Unit filename="include/Config.h" />
 		<Unit filename="include/Log.h" />
 		<Unit filename="include/Request.h" />
 		<Unit filename="include/Response.h" />
+		<Unit filename="include/Server.h" />
 		<Unit filename="include/base64.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/CgiService.cpp" />
@@ -56,6 +59,7 @@
 		<Unit filename="src/Log.cpp" />
 		<Unit filename="src/Request.cpp" />
 		<Unit filename="src/Response.cpp" />
+		<Unit filename="src/Server.cpp" />
 		<Unit filename="src/base64.cpp" />
 		<Extensions>
 			<code_completion />

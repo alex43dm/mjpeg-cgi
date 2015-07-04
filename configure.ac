@@ -33,6 +33,7 @@ fi
 
 AC_CHECK_LIB([pthread], [main])
 AC_CHECK_LIB([fcgi], [main])
+AC_CHECK_LIB([tinyxml], [main])
 
 dnl Checks for library functions.
 AC_FUNC_MALLOC

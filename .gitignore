@@ -23,6 +23,8 @@ ltmain.sh
 m4/
 *.o
 missing
+mjpeg-cgi-dev
+mjpeg-cgi
 mjpeg-cgi
 src/.deps/
 src/.dirstamp

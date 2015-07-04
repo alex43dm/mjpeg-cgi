@@ -1,15 +1,14 @@
 <?xml version="1.0"?>
 <root id="0">
-<!--настройки сервера-->
-<server>
-    <lock_file>/run/mjgpg-cgi/lock</lock_file>
-    <pid_file>/run/mjgpg-cgi/pid</pid_file>
-    <user>alex</user>
-    <group>www-data</group>
-    <!--путь к файлу сокета-->
-    <socket_path>/run/mjgpg-cgi/sock</socket_path>
-    <!--количество ниток-->
-    <children>10</children>
-
+    <server>
+        <lock_file>/tmp/mjgpg-cgi/lock</lock_file>
+        <pid_file>/tmp/mjgpg-cgi/pid</pid_file>
+        <user>alex</user>
+        <group>www-data</group>
+        <socket_path>/tmp/mjgpg-cgi/sock</socket_path>
+        <children>7</children>
+        <buffersize>10485760</buffersize>
+        <indexFile>/home/alex/Projects/mjpeg-cgi/index.html</indexFile>
+        <imagesDir>/home/alex/Projects/mjpeg-cgi/jpeg</imagesDir>
     </server>
 </root>
