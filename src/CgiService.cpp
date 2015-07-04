@@ -134,6 +134,7 @@ void CgiService::run()
         pthread_cond_broadcast(&_pCondVar);
 
         memcpy(_pBuffer,vjpg[i].c_str(),vjpg[i].size());
+        _pLen = vjpg[i].size();
 
         pthread_mutex_unlock(&_pMtx);
 

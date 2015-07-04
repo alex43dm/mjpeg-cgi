@@ -1,6 +1,30 @@
 <html>
 <head>
 <title>video</title>
+<style type="text/css">
+  #container {
+    width: 30px;
+    height: 60px;
+    position: relative;
+  }
+  #wrapper > #container {
+    display: table;
+    position: static;
+  }
+  #container div {
+    position: absolute;
+    top: 50%;
+  }
+  #container div div {
+    position: relative;
+    top: -50%;
+  }
+  #container > div {
+    display: table-cell;
+    vertical-align: middle;
+    position: static;
+  }
+</style>
 <script src="http://localhost/jquery.min.js"></script>
 <script src="http://localhost/jquery.timer.js"></script>
 <script>
@@ -39,27 +63,23 @@ $(document).ready(function(){
 
 </head>
 <body>
+<div id="wrapper">
+  <div id="container">
 
-  <header>
-    <h1>CAM#01</h1>
-  </header>
+    <div>
+      <h1>CAM#01</h1>
+      <div>
+        <button id="left" name="left" value="left">left</button>
+        <button id="up" name="up" value="up">up</button>
+        <button id="down" name="down" value="down">down</button>
+        <button id="right" name="right" value="right">right</button>
+      </div>
+    </div>
 
-  <nav>
-    <button id="left" name="left" value="left">left</button>
-    <button id="up" name="up" value="up">up</button>
-    <button id="down" name="down" value="down">down</button>
-    <button id="right" name="right" value="right">right</button>
-  </nav>
-
-  <section>
     <div id="mjpeg"/>
-    <!--img id="mjpeg" name="mjpeg" WIDTH="640" HEIGHT="480"/-->
-  </section>
 
-<footer>
-Copyright ©AD
-</footer>
-
+  </div>
+</div>
 </body>
 </html>
 
