@@ -13,7 +13,7 @@ $(document).ready(function(){
 
   timer.set({ time : 5000, autostart : false });
 
-  $('#mjpeg').append('<img width="640" height="480" border="0" src="http://localhost/mjpeg?action=streem" id="image">');
+  $('#mjpeg').append('<img width="640" height="480" border="0" src="http://localhost/mjpeg?action=stream" id="image">');
   $('#image').load(function(){
     timer.reset();
   });

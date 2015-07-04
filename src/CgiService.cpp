@@ -243,7 +243,7 @@ void CgiService::ProcessRequest(FCGX_Request *req)
         return;
     }
 
-    if(reqst.param("action") == "streem")
+    if(reqst.param("action") == "stream")
     {
         resps.startMJPG();
 
@@ -256,8 +256,9 @@ void CgiService::ProcessRequest(FCGX_Request *req)
 
                 if(!resps.nextMJPG(_pBuffer,_pLen))
                 {
-                    std::cout<<"thread: "<<pthread_self()<<" streem exit"<<std::endl;
-                    break;
+                    Log::gdb("stream thread: %dl exit",pthread_self());
+                    resps.endMJPG();
+                    return;
                 }
             }
             catch (std::exception const &ex)
@@ -267,9 +268,6 @@ void CgiService::ProcessRequest(FCGX_Request *req)
                 return;
             }
 
-        resps.endMJPG();
-
-        return;
     }
 
     resps.ok(_pIndexHtml,"");
