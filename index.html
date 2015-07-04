@@ -1,14 +1,21 @@
 <html>
 <head>
 <title>video</title>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="http://localhost/jquery.min.js"></script>
+<script src="http://localhost/jquery.timer.js"></script>
 <script>
 $(document).ready(function(){
 
-  $('#image_div').append('<img width="640" height="480" border="0" src="http://localhost/mjpeg?action=streem" id="image">');
-  $('#image').load().error(function(){
-    console.log($(this));
-    alert("Error load imge");
+  var timer = $.timer(function(){
+    alert('Timeout load video. Please, reload page');
+ //   location.reload();
+  });
+
+  timer.set({ time : 5000, autostart : false });
+
+  $('#mjpeg').append('<img width="640" height="480" border="0" src="http://localhost/mjpeg?action=streem" id="image">');
+  $('#image').load(function(){
+    timer.reset();
   });
 
     $("#left").click(function(){
@@ -29,6 +36,7 @@ $(document).ready(function(){
     });
 });
 </script>
+
 </head>
 <body>
 
@@ -44,10 +52,8 @@ $(document).ready(function(){
   </nav>
 
   <section>
-    <div id="image_div"/>
-<!--
-    <img name="mjpg" src="http://localhost/mjpeg?action=streem" WIDTH=640 HEIGHT=480/>
--->
+    <div id="mjpeg"/>
+    <!--img id="mjpeg" name="mjpeg" WIDTH="640" HEIGHT="480"/-->
   </section>
 
 <footer>
