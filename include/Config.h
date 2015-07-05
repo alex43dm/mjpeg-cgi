@@ -26,6 +26,7 @@ public:
     std::string camIp;
     unsigned camPort;
     unsigned camJpgLocalPort;
+    unsigned camAliveInterval;
 
 
     static Config* Instance();

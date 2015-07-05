@@ -104,11 +104,6 @@ std::string CgiService::getFileContents(const std::string &filename)
 
 void CgiService::run()
 {
-    while(!c1->init())
-    {
-        sleep(3);
-    }
-
     c1->reciever();
 }
 
@@ -233,7 +228,6 @@ void CgiService::ProcessRequest(FCGX_Request *req)
                 resps.status(503);
                 return;
             }
-
     }
 
     resps.ok(_pIndexHtml,"");

@@ -10,14 +10,11 @@
         <fps>0.5</fps>
         <buffersize>65536</buffersize>
         <indexFile>/home/alex/Projects/mjpeg-cgi/index.html</indexFile>
-        <imagesDir>/home/alex/Projects/mjpeg-cgi/jpeg</imagesDir>
-
-        <control_port>9999</control_port>
-
-        <camera_port>20480</camera_port>
-        <camera_ip>192.168.2.33</camera_ip>
-
-        <rotator_ip>192.168.0.3</rotator_ip>
-
     </server>
+    <camera>
+        <ip>192.168.2.33</ip>
+        <port>80</port>
+        <stream_port>9999</stream_port>
+        <alive_inteval>3</alive_inteval>
+    </camera>
 </root>

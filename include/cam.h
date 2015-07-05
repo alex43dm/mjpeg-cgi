@@ -99,7 +99,6 @@ private:
     pthread_t _pThread;
 
 
-    void dispatcher();
     int applyZoom();
 
     cam(const cam&);

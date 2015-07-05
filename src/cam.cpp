@@ -35,7 +35,7 @@ cam::cam(const std::string &address, unsigned short remotePort, unsigned short l
         return;
     }
     sa.sin_family = AF_INET;
-    sa.sin_port = 0x5000;//htons(remotePort);
+    sa.sin_port = htons(remotePort);//0x5000;
 
     //setup address structure for incoming UDP image data
     memset(&saLocal, 0, sizeof(saLocal));
@@ -189,7 +189,7 @@ bool cam::init()
         Log::err("cam: state: connected error");
         return false;
     }
-
+/*
     if (request(CAM_RECMODE) == "ok")
     {
         Log::info("cam: state: ready");
@@ -200,10 +200,10 @@ bool cam::init()
         Log::err("cam: state: ready error");
         return false;
     }
-
+*/
     if(stream(true))
     {
-
+        state = state_t::startstream;
         if(pthread_create(&_pThread, NULL, &this->streamUpdate, this))
         {
             Log::err("creating thread failed");
@@ -221,103 +221,14 @@ void *cam::streamUpdate(void *data)
 {
     cam *c1 = (cam*)data;
 
-    sleep(3);
+    sleep(cfg->camAliveInterval);
     while(!c1->exit)
     {
         c1->stream(true);
-        sleep(3);
+        sleep(cfg->camAliveInterval);
     }
 
     return NULL;
-}
-
-void cam::dispatcher()
-{
-    bool running = true;
-    time_t lastCameraCheck = 0;
-    int errors = 0;
-    std::string result;
-    while (running)
-    {
-        //std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        if (errors > 10)
-        {
-            errors = 0;
-            state = state_t::initional;
-        }
-        switch (state)
-        {
-        case state_t::initional:
-            if (request(CAM_CAPABILITY_REQUEST) == "ok")
-                state = state_t::connected;
-            break;
-        case state_t::connected:
-            if (request(CAM_RECMODE) == "ok")
-            {
-                state = state_t::ready;
-                errors = 0;
-            }
-            else errors++;
-            break;
-        case state_t::ready:
-            if (difftime(time(NULL), lastCameraCheck) > 10)
-            {
-                result = request(CAM_GETSTATE);
-                if (result.empty())
-                    errors++;
-                else if (result == "on")
-                {
-                    if (request(CAM_STOPSTREAM) == "ok")
-                    {
-                        errors = 0;
-                        lastCameraCheck = time(NULL);
-                    }
-                }
-                else if (result == "off")
-                {
-                    errors = 0;
-                    lastCameraCheck = time(NULL);
-                }
-            }
-            break;
-        case state_t::startstream:
-            if (request(camReqStreamString) == "ok")
-            {
-                state = state_t::stream;
-                errors = 0;
-                lastCameraCheck = time(NULL);
-            }
-            else errors++;
-            break;
-        case state_t::stream:
-            if (difftime(time(NULL), lastCameraCheck) > 10)
-            {
-                result = request(CAM_GETSTATE);
-                if (result.empty())
-                    errors++;
-                else if (result == "off")
-                    state = state_t::startstream;
-                else if (result == "on")
-                {
-                    errors = 0;
-                    lastCameraCheck = time(NULL);
-                }
-            }
-            else if (zoomChanged)
-            {
-                if (applyZoom() == 0)
-                {
-                    zoomChanged = false;
-                    errors = 0;
-                }
-                else errors++;
-            }
-            break;
-        case state_t::dispose:
-            running = false;
-            break;
-        }
-    }
 }
 
 int cam::applyZoom()
@@ -359,7 +270,12 @@ void cam::reciever()
     int numRecieved;
     size_t pos;
 
-    while (true)
+    while(!init() && !exit)
+    {
+        sleep(3);
+    }
+
+    while(!exit)
     {
         if (state == state_t::dispose)
             break;

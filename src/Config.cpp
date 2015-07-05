@@ -129,24 +129,37 @@ bool Config::Load()
         {
             FPS = static_cast<unsigned>(1000000 / strtof(mel->GetText(),NULL));
         }
-
-        if( (mel = mElem->FirstChildElement("control_port")) && (mel->GetText()) )
-        {
-            camJpgLocalPort = static_cast<unsigned>(atoi(mel->GetText()));
-        }
-
-        if( (mel = mElem->FirstChildElement("camera_ip")) && (mel->GetText()) )
-        {
-            camIp = mel->GetText();
-        }
-        if( (mel = mElem->FirstChildElement("camera_port")) && (mel->GetText()) )
-        {
-            camPort = static_cast<unsigned>(atoi(mel->GetText()));
-        }
     }
     else
     {
         exit("no server section in config file. exit");
+    }
+
+    if( (mElem = mRoot->FirstChildElement("camera")) )
+    {
+        if( (mel = mElem->FirstChildElement("stream_port")) && (mel->GetText()) )
+        {
+            camJpgLocalPort = static_cast<unsigned>(atoi(mel->GetText()));
+        }
+
+        if( (mel = mElem->FirstChildElement("ip")) && (mel->GetText()) )
+        {
+            camIp = mel->GetText();
+        }
+
+        if( (mel = mElem->FirstChildElement("port")) && (mel->GetText()) )
+        {
+            camPort = static_cast<unsigned>(atoi(mel->GetText()));
+        }
+
+        if( (mel = mElem->FirstChildElement("alive_inteval")) && (mel->GetText()) )
+        {
+            camAliveInterval = static_cast<unsigned>(atoi(mel->GetText()));
+        }
+    }
+    else
+    {
+        exit("no camera section in config file. exit");
     }
 
     mIsInited = true;
