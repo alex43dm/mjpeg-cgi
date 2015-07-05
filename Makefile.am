@@ -10,17 +10,18 @@ src/Response.cpp \
 src/Config.cpp \
 src/Server.cpp \
 src/cam.cpp \
-src/HttpClient.cpp
+src/HttpClient.cpp \
+src/ImgMgk.cpp
 
 INCLUDE=-Iinclude -I/usr/include
 DEBDEP=bash (>= 2.05a-11), awk, procps (>= 1:2.0.7-8), sed (>= 3.02-8), grep (>= 2.4.2-3), coreutils (>= 5.0-5)
 BUILDDIR=$(PWD)/rpmbuild
 
 if DEBUG
-AM_CXXFLAGS = -g -O0 -Wall -DDEBUG $(INCLUDE)
+AM_CXXFLAGS = -g -O0 -Wall -DDEBUG $(INCLUDE) `Magick++-config --cppflags --cxxflags`
 bin_PROGRAMS = mjpeg-cgi-dev
 mjpeg_cgi_dev_SOURCES = $(SOURCES)
-mjpeg_cgi_dev_LDFLAGS = $(LD_ADD)
+mjpeg_cgi_dev_LDFLAGS = $(LD_ADD) `Magick++-config --ldflags --libs`
 else
 AM_CXXFLAGS = -Wall  $(CFLAGS) $(INCLUDE)
 bin_PROGRAMS = mjpeg-cgi

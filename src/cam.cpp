@@ -72,7 +72,7 @@ std::string cam::request(const std::string &cmd)
 
     Log::gdb("cam cmd: %s",cmd.c_str());
 
-    std::string *temp = httpClient->get("http://"+address+cmd);
+    std::string temp = httpClient->get("http://"+address+cmd);
     /*
     if ((s1 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
     {
@@ -111,14 +111,10 @@ std::string cam::request(const std::string &cmd)
     // Cleaning up Windows Socket Dependencies
     close(s1);
 */
-    if(temp == NULL)
-    {
-        return "";
-    }
 
-    Log::gdb("get: %s",(*temp).c_str());
+    Log::gdb("get: %s",temp.c_str());
 
-    std::size_t start = (*temp).find("<result>");
+    std::size_t start = temp.find("<result>");
     if (start == std::string::npos)
     {
         Log::err("no result open tag");
@@ -126,40 +122,35 @@ std::string cam::request(const std::string &cmd)
     }
     else start += 8;
 
-    std::size_t end = (*temp).find("</result>");
+    std::size_t end = temp.find("</result>");
     if (end == std::string::npos)
     {
         Log::err("no result close tag");
-        delete temp;
         return "";
     }
 
-    result = (*temp).substr(start, end - start);
+    result = temp.substr(start, end - start);
     if (cmd != CAM_GETSTATE)
     {
         Log::gdb("result: %s",result.c_str());
-        delete temp;
         return result;
     }
 
 
-    start = (*temp).find("<livestream>");
+    start = temp.find("<livestream>");
     if (start == std::string::npos)
     {
-        delete temp;
         return "";
     }
     else start += 12;
 
-    end = (*temp).find("</livestream>");
+    end = temp.find("</livestream>");
     if (end == std::string::npos)
     {
-        delete temp;
         return "";
     }
 
-    result = (*temp).substr(start, end - start);
-    delete temp;
+    result = temp.substr(start, end - start);
     return result;
 }
 

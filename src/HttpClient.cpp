@@ -1,19 +1,18 @@
 #include <iostream>
-
+#include <string.h>
 #include "Log.h"
 #include "HttpClient.h"
 
 HttpClient::HttpClient()
 {
-	curl_global_init(CURL_GLOBAL_ALL);
-	curl_handle = curl_easy_init();
-	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, callback);
-	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)this);
+    curl_global_init(CURL_GLOBAL_ALL);
+    curl_handle = curl_easy_init();
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, callback);
 
     //curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, "Accept: image/gif, image/x-bitmap, image/jpeg, image/pjpeg");
     //curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, "Connection: Keep-Alive");
     //curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, "Content-type: application/x-www-form-urlencoded;charset=UTF-8");
-	curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, USERAGENT);
+    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, USERAGENT);
     curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
 
     curl_easy_setopt(curl_handle, CURLOPT_NOSIGNAL, 0);
@@ -26,103 +25,118 @@ HttpClient::HttpClient()
 
 HttpClient::~HttpClient()
 {
-	curl_global_cleanup();
+    curl_global_cleanup();
 }
+
+
+struct MemoryStruct
+{
+    char *memory;
+    size_t size;
+};
 
 size_t HttpClient::callback(void *contents, size_t csize, size_t nmemb, void *data)
 {
-	HttpClient *hc = (HttpClient *)data;
+    size_t realsize = csize * nmemb;
+    struct MemoryStruct *mem = (struct MemoryStruct *)data;
 
-	//char * p = new char[csize * nmemb];
-	//memcopy(p, contents, csize*nmemb);
-	std::string s;
-	s.insert(0, (const char*)contents, csize * nmemb);
-	hc->responce->append(s);
-	hc->downloadSize += csize * nmemb;
+    mem->memory = (char*)realloc(mem->memory, mem->size + realsize + 1);
+    if(mem->memory == NULL)
+    {
+        Log::err("not enough memory (realloc returned NULL)\n");
+        return 0;
+    }
 
-	return csize * nmemb;
+    memcpy(&(mem->memory[mem->size]), contents, realsize);
+    mem->size += realsize;
+    mem->memory[mem->size] = 0;
+
+    return realsize;
 }
 
-std::string* HttpClient::get(const std::string &url)
+std::string HttpClient::get(const std::string &url)
 {
-	Log::gdb("get url: %s", url.c_str());
+    Log::gdb("get url: %s", url.c_str());
 
-//	if(responce)
-//		delete responce;
+    struct MemoryStruct chunk;
 
-	responce = new std::string();
+    chunk.memory = (char*)malloc(1);
+    chunk.size = 0;
 
-	curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
-	res = curl_easy_perform(curl_handle);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
+    curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
+    res = curl_easy_perform(curl_handle);
 
-	if(res != CURLE_OK)
-	{
-		Log::err("curl_easy_perform failed: %s after: %d", curl_easy_strerror(res),downloadSize);
-		delete responce;
-		return NULL;
-	}
+    if(res != CURLE_OK)
+    {
+        Log::err("curl_easy_perform failed: %s after: %d", curl_easy_strerror(res),downloadSize);
+        free(chunk.memory);
+        return "";
+    }
 
-    Log::gdb("get url: ok, size: %d", responce->size());
-
-	return responce;
+    std::string ret = std::string(chunk.memory,chunk.size);
+    free(chunk.memory);
+    return ret;
 }
 
-std::string *HttpClient::get(const std::string &url, ssize_t sz)
+std::string HttpClient::get(const std::string &url, ssize_t sz)
 {
-	Log::gdb("get url: %s", url.c_str());
+    struct MemoryStruct chunk;
 
-	responce = new std::string();
+    chunk.memory = (char*)malloc(1);
+    chunk.size = 0;
 
-	curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
-	res = curl_easy_perform(curl_handle);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
+    curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
+    res = curl_easy_perform(curl_handle);
 
-	if(res != CURLE_OK)
-	{
-		Log::err("curl_easy_perform failed: %s", curl_easy_strerror(res));
+    if(res != CURLE_OK)
+    {
+        Log::err("curl_easy_perform failed: %s", curl_easy_strerror(res));
 
-		if(downloadSize < sz)
+        if(downloadSize < sz)
         {
             curl_easy_setopt(curl_handle, CURLOPT_RESUME_FROM , downloadSize);
             res = curl_easy_perform(curl_handle);
             if(res != CURLE_OK)
             {
                 Log::err("curl_easy_perform failed(1): %s", curl_easy_strerror(res));
-                delete responce;
-                return nullptr;
+                free(chunk.memory);
+                return "";
             }
         }
-	}
+    }
 
-    Log::gdb("get url: ok, size: %d", responce->size());
-
-	return responce;
+    std::string ret = std::string(chunk.memory,chunk.size);
+    free(chunk.memory);
+    return ret;
 }
 
-std::string* HttpClient::post(const std::string &url, const std::string &params)
+std::string HttpClient::post(const std::string &url, const std::string &params)
 {
-	Log::gdb("post url: &s", url.c_str());
+    Log::gdb("post url: &s", url.c_str());
 
-//	char *parms = new char[1024];
-//	parms = curl_easy_escape( curl_handle, params.c_str() , params.size() );
+    struct MemoryStruct chunk;
 
-//	if(responce)
-//		delete responce;
+    chunk.memory = (char*)malloc(1);
+    chunk.size = 0;
 
-	responce = new std::string();
-	curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
+    curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
 //	curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, (void*)parms);
-	curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, (void*)params.c_str());
-	res = curl_easy_perform(curl_handle);
+    curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, (void*)params.c_str());
+    res = curl_easy_perform(curl_handle);
 //	delete parms;
 
-	if(res != CURLE_OK)
-	{
+    if(res != CURLE_OK)
+    {
         Log::err("curl_easy_perform failed: %s", curl_easy_strerror(res));
-		delete responce;
-		return NULL;
-	}
+        free(chunk.memory);
+        return "";
+    }
 
-    Log::gdb("post url: ok, size: %d", responce->size());
-	return responce;
+    std::string ret = std::string(chunk.memory,chunk.size);
+    free(chunk.memory);
+    return ret;
 }
 

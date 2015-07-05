@@ -12,9 +12,9 @@ class HttpClient
 	public:
 		HttpClient();
 		virtual ~HttpClient();
-		std::string *get(const std::string &url);
-		std::string *get(const std::string &url, ssize_t sz);
-		std::string *post(const std::string &url, const std::string &params);
+		std::string get(const std::string &url);
+		std::string get(const std::string &url, ssize_t sz);
+		std::string post(const std::string &url, const std::string &params);
 
 	protected:
 	private:

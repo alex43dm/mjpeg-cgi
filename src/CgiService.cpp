@@ -223,6 +223,11 @@ void CgiService::ProcessRequest(FCGX_Request *req)
             std::cout<<"thread: "<<pthread_self()<<" control command: zoomstop"<<std::endl;
             c1->applyZoom(panasonic::zoom_t::none);
         }
+        else if(reqst.param("dir")=="shot")
+        {
+            std::cout<<"thread: "<<pthread_self()<<" control command: shot"<<std::endl;
+            c1->takeAshot();
+        }
 
         resps.status(200);
         return;

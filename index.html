@@ -78,6 +78,10 @@ $(document).ready(function(){
         $.ajax({url: "http://localhost/mjpeg?action=control&dir=zoomstop", success: function(result){
         }});
     });
+    $("#shot").click(function(){
+        $.ajax({url: "http://localhost/mjpeg?action=control&dir=shot", success: function(result){
+        }});
+    });
 });
 </script>
 
@@ -98,6 +102,7 @@ $(document).ready(function(){
         <button id="zoomout" name="zoomout" value="zoomout">zoomout</button>
         <button id="zoomoutfast" name="zoomoutfast" value="zoomoutfast">zoomoutfast</button>
         <button id="zoomstop" name="zoomstop" value="zoomstop">zoomstop</button>
+        <button id="shot" name="shot" value="shot">shot</button>
       </div>
     </div>
 

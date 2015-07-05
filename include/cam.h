@@ -27,6 +27,10 @@ std::string const CAM_ZOOMOUT_FAST		 = "/cam.cgi?mode=camcmd&value=wide-fast";
 std::string const CAM_ZOOMIN			 = "/cam.cgi?mode=camcmd&value=tele-normal";
 std::string const CAM_ZOOMIN_FAST		 = "/cam.cgi?mode=camcmd&value=tele-fast";
 std::string const CAM_ZOOMSTOP			 = "/cam.cgi?mode=camcmd&value=zoomstop";
+//take a picture
+std::string const CAM_TAKESHOT			 = "/cam.cgi?mode=camcmd&value=capture";
+//take a picture with focus on a given coordinate: 840/234 and value2 on/off
+std::string const CAM_TAKESHOTWITHFOCUS	 = "/cam.cgi?mode=camctrl&type=touchcapt&value=%d/%d&value2=%s";
 
 enum state_t
 {
@@ -63,6 +67,7 @@ public:
     void reciever();
     bool stream(bool OnOff);
     int applyZoom(zoom_t lzoom);
+    bool takeAshot(){ return request(CAM_TAKESHOT) == "ok" ? true : false;}
 protected:
     bool exit;
 private:
