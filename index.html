@@ -31,8 +31,8 @@
 $(document).ready(function(){
 
   var timer = $.timer(function(){
-    alert('Timeout load video. Please, reload page');
- //   location.reload();
+  //  alert('Timeout load video. Please, reload page');
+    location.reload();
   });
 
   timer.set({ time : 5000, autostart : false });
