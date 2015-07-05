@@ -7,11 +7,13 @@
 
 #include "Config.h"
 #include "Log.h"
+#include "ImgMgk.h"
 
 using namespace panasonic;
 
 cam::cam(const std::string &address, unsigned short remotePort, unsigned short localPort) :
     Mtx(PTHREAD_MUTEX_INITIALIZER),
+    filterMarkName(false),
     exit(false),
     zoomChanged(false),
     state(state_t::initional),
@@ -68,52 +70,44 @@ cam::~cam()
 
 std::string cam::request(const std::string &cmd)
 {
-    std::string result;
-
     Log::gdb("cam cmd: %s",cmd.c_str());
 
     std::string temp = httpClient->get("http://"+address+cmd);
 
     Log::gdb("get: %s",temp.c_str());
 
-    std::size_t start = temp.find("<result>");
-    if (start == std::string::npos)
-    {
-        Log::err("no result open tag");
-        return "";
-    }
-    else start += 8;
+    TiXmlDocument mDoc;
+    TiXmlElement *camrply, *mElem;
 
-    std::size_t end = temp.find("</result>");
-    if (end == std::string::npos)
+    const char* pTest = mDoc.Parse(temp.c_str(), 0 , TIXML_ENCODING_UTF8);
+    if(pTest == NULL && mDoc.Error())
     {
-        Log::err("no result close tag");
-        return "";
-    }
+        Log::err("parse: "+temp+
+             " error: "+ mDoc.ErrorDesc()+
+             " row: "+std::to_string(mDoc.ErrorRow())+
+             " col: "+std::to_string(mDoc.ErrorCol()));
 
-    result = temp.substr(start, end - start);
-    if (cmd != CAM_GETSTATE)
-    {
-        Log::err("result: %s",result.c_str());
-        return result;
-    }
-
-
-    start = temp.find("<livestream>");
-    if (start == std::string::npos)
-    {
-        return "";
-    }
-    else start += 12;
-
-    end = temp.find("</livestream>");
-    if (end == std::string::npos)
-    {
         return "";
     }
 
-    result = temp.substr(start, end - start);
-    return result;
+    camrply = mDoc.FirstChildElement("camrply");
+
+    if(!camrply)
+    {
+        Log::err("does not found camrply section in file: "+temp);
+        return "";
+    }
+
+    if( (mElem = camrply->FirstChildElement("result")) )
+    {
+        return mElem->GetText();
+    }
+    else
+    {
+        Log::err("does not found result section in file: "+temp);
+    }
+
+    return "";
 }
 
 bool cam::stream(bool OnOff = true)
@@ -279,8 +273,19 @@ void cam::reciever()
 
                         pthread_mutex_lock(&Mtx);
 
-                        memcpy(Buffer,tempOutputStorage.c_str(),tempOutputStorage.size());
-                        Len = tempOutputStorage.size();
+
+                        if(filterMarkName)
+                        {
+                            Magick::Blob b1 = ImgMgk::conv(tempOutputStorage.c_str(),tempOutputStorage.size(), "oNe");
+
+                            Len = b1.length();
+                            memcpy(Buffer,b1.data(),Len);
+                        }
+                        else
+                        {
+                            Len = tempOutputStorage.size();
+                            memcpy(Buffer,tempOutputStorage.c_str(),Len);
+                        }
 
                         pthread_cond_broadcast(&CondVar);
                         pthread_mutex_unlock(&Mtx);

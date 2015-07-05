@@ -3,6 +3,7 @@
 #include "Config.h"
 #include "Server.h"
 #include "CgiService.h"
+#include "ImgMgk.h"
 
 #include <getopt.h>
 
@@ -15,7 +16,6 @@ int main(int argc, char *argv[])
     std::string config = "config.xml";
     std::string sock_path;
     int ret;
-
     bool fPrintPidFile = false;
 
     while ( (ret = getopt(argc,argv,"pc:s:")) != -1)
@@ -54,6 +54,8 @@ int main(int argc, char *argv[])
     {
         cfg->SocketPath = sock_path;
     }
+
+    ImgMgk::init(argv);
 
     CgiService(cfg->ServerThreads,cfg->SocketPath).run();
 

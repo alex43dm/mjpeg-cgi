@@ -31,6 +31,14 @@ std::string const CAM_ZOOMSTOP			 = "/cam.cgi?mode=camcmd&value=zoomstop";
 std::string const CAM_TAKESHOT			 = "/cam.cgi?mode=camcmd&value=capture";
 //take a picture with focus on a given coordinate: 840/234 and value2 on/off
 std::string const CAM_TAKESHOTWITHFOCUS	 = "/cam.cgi?mode=camctrl&type=touchcapt&value=%d/%d&value2=%s";
+std::string const CAM_3BOXMODE       	 = "/cam.cgi?mode=camcmd&value=3boxplaymode"
+std::string const CAM_VIDEO_RECSTART 	 = "/cam.cgi?mode=camcmd&value=video_recstart"
+std::string const CAM_VIDEO_RECSTOP 	 = "/cam.cgi?mode=camcmd&value=video_recstop"
+std::string const CAM_POWEROFF      	 = "/cam.cgi?mode=camcmd&value=poweroff"
+std::string const CAM_HIGHTLIGHTCANCEL   = "/cam.cgi?mode=camcmd&value=highlightcancel"
+std::string const CAM_RECSTART           = "/cam.cgi?mode=camcmd&value=recstart"
+std::string const CAM_RECSTOP            = "/cam.cgi?mode=camcmd&value=recstop"
+
 
 enum state_t
 {
@@ -58,6 +66,7 @@ public:
     pthread_mutex_t Mtx;
     unsigned char *Buffer;
     size_t Len;
+    bool filterMarkName;
 
     cam(const std::string &address, unsigned short remotePort, unsigned short localPort);
     ~cam();

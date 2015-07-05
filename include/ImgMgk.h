@@ -6,9 +6,10 @@
 class ImgMgk
 {
     public:
-        ImgMgk(char *argv[]);
+        ImgMgk();
         virtual ~ImgMgk();
-        void conv(void *data, size_t length);
+        static void init(char *argv[]);
+        static Magick::Blob conv(const void *data, size_t length, const std::string &text);
     protected:
     private:
 };
