@@ -73,44 +73,6 @@ std::string cam::request(const std::string &cmd)
     Log::gdb("cam cmd: %s",cmd.c_str());
 
     std::string temp = httpClient->get("http://"+address+cmd);
-    /*
-    if ((s1 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
-    {
-        Log::err("socket() failed with error code : ");
-        return "";
-    }
-
-    if (connect(s1,(struct sockaddr *)&sa, sizeof(sa)) != 0)
-    {
-        Log::err("Could not connect");
-        ::close(s1);
-        return "";
-    }
-
-    if (send(s1, cmd.c_str(), cmd.length(), 0) != (int)cmd.length())
-    {
-        Log::err("Could not send the request to the Server");
-        close(s1);
-        return "";
-    }
-
-    if (send(s1, httpReqEnd, strlen(httpReqEnd), 0) != (int)strlen(httpReqEnd))
-    {
-		Log::err("Could not send the end of request to the Server");
-        close(s1);
-        return "";
-    }
-
-    memset(buffer, 0, sizeof(buffer));
-    while (recv(s1, buffer, sizeof(buffer), 0) > 0)
-    {
-        temp.append(buffer);
-        memset(buffer, 0, sizeof(buffer));
-    }
-
-    // Cleaning up Windows Socket Dependencies
-    close(s1);
-*/
 
     Log::gdb("get: %s",temp.c_str());
 
@@ -132,7 +94,7 @@ std::string cam::request(const std::string &cmd)
     result = temp.substr(start, end - start);
     if (cmd != CAM_GETSTATE)
     {
-        Log::gdb("result: %s",result.c_str());
+        Log::err("result: %s",result.c_str());
         return result;
     }
 
