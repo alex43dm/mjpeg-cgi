@@ -15,7 +15,9 @@ cam::cam(const std::string &address, unsigned short remotePort, unsigned short l
     exit(false),
     zoomChanged(false),
     state(state_t::initional),
-    zoom(zoom_t::none)
+    zoom(zoom_t::none),
+    localPort(localPort),
+    address(address)
 {
     sockaddr_in saLocal;
 
@@ -23,8 +25,7 @@ cam::cam(const std::string &address, unsigned short remotePort, unsigned short l
 
     Buffer = new unsigned char[cfg->BufferSize];
 
-    sprintf(httpReqEnd, " HTTP/1.0\r\nHost: %s\r\nConnection: close\r\n\r\n", address.c_str());
-    sprintf(camReqStreamString, CAM_STREAM.c_str(), localPort);
+    httpClient = new HttpClient();
 
     //setup address structure for outgoing HTTP control messages
     memset(&sa, 0, sizeof(sa));
@@ -59,6 +60,7 @@ cam::cam(const std::string &address, unsigned short remotePort, unsigned short l
 
 cam::~cam()
 {
+    delete httpClient;
     state = state_t::dispose;
     pthread_cond_destroy(&CondVar);
     pthread_join(_pThread,0);
@@ -66,12 +68,12 @@ cam::~cam()
 
 std::string cam::request(const std::string &cmd)
 {
-    int s1;
-    std::string result, temp;
-    static char buffer[10240];
+    std::string result;
 
     Log::gdb("cam cmd: %s",cmd.c_str());
 
+    std::string *temp = httpClient->get("http://"+address+cmd);
+    /*
     if ((s1 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
     {
         Log::err("socket() failed with error code : ");
@@ -108,10 +110,15 @@ std::string cam::request(const std::string &cmd)
 
     // Cleaning up Windows Socket Dependencies
     close(s1);
+*/
+    if(temp == NULL)
+    {
+        return "";
+    }
 
-    Log::gdb("get: %s",temp.c_str());
+    Log::gdb("get: %s",(*temp).c_str());
 
-    std::size_t start = temp.find("<result>");
+    std::size_t start = (*temp).find("<result>");
     if (start == std::string::npos)
     {
         Log::err("no result open tag");
@@ -119,29 +126,40 @@ std::string cam::request(const std::string &cmd)
     }
     else start += 8;
 
-    std::size_t end = temp.find("</result>");
+    std::size_t end = (*temp).find("</result>");
     if (end == std::string::npos)
     {
         Log::err("no result close tag");
+        delete temp;
         return "";
     }
 
-    result = temp.substr(start, end - start);
+    result = (*temp).substr(start, end - start);
     if (cmd != CAM_GETSTATE)
     {
         Log::gdb("result: %s",result.c_str());
+        delete temp;
         return result;
     }
 
 
-    start = temp.find("<livestream>");
+    start = (*temp).find("<livestream>");
     if (start == std::string::npos)
+    {
+        delete temp;
         return "";
+    }
     else start += 12;
-    end = temp.find("</livestream>");
+
+    end = (*temp).find("</livestream>");
     if (end == std::string::npos)
+    {
+        delete temp;
         return "";
-    result = temp.substr(start, end - start);
+    }
+
+    result = (*temp).substr(start, end - start);
+    delete temp;
     return result;
 }
 
@@ -149,7 +167,7 @@ bool cam::stream(bool OnOff = true)
 {
     if(OnOff)
     {
-        if (request(camReqStreamString) == "ok")
+        if (request(CAM_STREAM+std::to_string(localPort)) == "ok")
         {
             Log::info("cam: state: stream");
             state = state_t::stream;

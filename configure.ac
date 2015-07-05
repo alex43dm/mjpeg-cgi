@@ -34,6 +34,7 @@ fi
 AC_CHECK_LIB([pthread], [main])
 AC_CHECK_LIB([fcgi], [main])
 AC_CHECK_LIB([tinyxml], [main])
+AC_CHECK_LIB([curl], [main])
 
 dnl Checks for library functions.
 AC_FUNC_MALLOC
@@ -59,14 +60,10 @@ AC_CHECK_HEADERS([sys/time.h])
 dnl Checks for typedefs, structures, and compiler characteristics.
 dnl AC_FUNC_STRNLEN
 AC_PROG_RANLIB
-AC_TYPE_INT32_T
 AC_TYPE_OFF_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
-AC_TYPE_UINT16_T
-AC_TYPE_UINT32_T
-AC_TYPE_UINT8_T
 
 AC_CONFIG_HEADERS([config.h])
 

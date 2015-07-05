@@ -9,7 +9,8 @@ src/Request.cpp  \
 src/Response.cpp \
 src/Config.cpp \
 src/Server.cpp \
-src/cam.cpp
+src/cam.cpp \
+src/HttpClient.cpp
 
 INCLUDE=-Iinclude -I/usr/include
 DEBDEP=bash (>= 2.05a-11), awk, procps (>= 1:2.0.7-8), sed (>= 3.02-8), grep (>= 2.4.2-3), coreutils (>= 5.0-5)
