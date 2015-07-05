@@ -23,15 +23,35 @@ Magick::Blob ImgMgk::conv(const void *data, size_t length, const std::string &te
     Magick::Image image;
     image.read(blob);
 
-    std::list<Magick::Drawable> draw_list;
+    image.annotate(text, Magick::SouthEastGravity);
 
-    draw_list.push_back(Magick::DrawableText(10, 10, text));
-    draw_list.push_back(Magick::DrawableFont("Dejavu", Magick::NormalStyle, 12, Magick::NormalStretch));
-    // set the text color (the fill color must be set to transparent)
-    //draw_list.push_back(Magick::DrawableStrokeColor(Magick::Color("black")));
-    //draw_list.push_back(Magick::DrawableFillColor(Magick::Color("black")));
+    Magick::Blob blob1;
+    image.magick("JPEG"); // Set JPEG output format
+    image.write(&blob1);
 
-    image.draw(draw_list);
+    return blob1;
+}
+
+Magick::Blob ImgMgk::def(const std::string &text)
+{
+    Magick::Image image(Magick::Geometry(640,480), Magick::Color("white"));
+    image.magick("JPEG" );
+    //image.font("-*-bitstream charter-medium-r-normal-*-*-*-*-*-*-*-iso8859-1");
+    image.annotate(text, Magick::SouthEastGravity);
+
+    Magick::Blob blob1;
+    image.write(&blob1);
+
+    return blob1;
+}
+
+Magick::Blob ImgMgk::gray(const void *data, size_t length)
+{
+    Magick::Blob blob(data,length);
+    Magick::Image image;
+    image.read(blob);
+
+    image.type( Magick::GrayscaleType );
 
     Magick::Blob blob1;
     image.magick("JPEG"); // Set JPEG output format

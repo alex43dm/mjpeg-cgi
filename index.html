@@ -82,6 +82,10 @@ $(document).ready(function(){
         $.ajax({url: "http://localhost/mjpeg?action=control&dir=shot", success: function(result){
         }});
     });
+    $("#gray").click(function(){
+        $.ajax({url: "http://localhost/mjpeg?action=control&dir=gray", success: function(result){
+        }});
+    });
 });
 </script>
 
@@ -103,6 +107,7 @@ $(document).ready(function(){
         <button id="zoomoutfast" name="zoomoutfast" value="zoomoutfast">zoomoutfast</button>
         <button id="zoomstop" name="zoomstop" value="zoomstop">zoomstop</button>
         <button id="shot" name="shot" value="shot">shot</button>
+        <button id="gray" name="gray" value="gray">gray</button>
       </div>
     </div>
 

@@ -8,6 +8,7 @@
 #include <limits.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <time.h>
 
 #include "Log.h"
 #include "CgiService.h"
@@ -200,33 +201,34 @@ void CgiService::ProcessRequest(FCGX_Request *req)
         }
         else if(reqst.param("dir")=="zoomin")
         {
-            std::cout<<"thread: "<<pthread_self()<<" control command: zoomin"<<std::endl;
             c1->applyZoom(panasonic::zoom_t::in);
         }
         else if(reqst.param("dir")=="zoominfast")
         {
-            std::cout<<"thread: "<<pthread_self()<<" control command: zoominfast"<<std::endl;
             c1->applyZoom(panasonic::zoom_t::fastIn);
         }
         else if(reqst.param("dir")=="zoomout")
         {
-            std::cout<<"thread: "<<pthread_self()<<" control command: zoomout"<<std::endl;
             c1->applyZoom(panasonic::zoom_t::out);
         }
         else if(reqst.param("dir")=="zoomoutfast")
         {
-            std::cout<<"thread: "<<pthread_self()<<" control command: zoomoutfast"<<std::endl;
             c1->applyZoom(panasonic::zoom_t::fastOut);
         }
         else if(reqst.param("dir")=="zoomstop")
         {
-            std::cout<<"thread: "<<pthread_self()<<" control command: zoomstop"<<std::endl;
             c1->applyZoom(panasonic::zoom_t::none);
         }
         else if(reqst.param("dir")=="shot")
         {
-            std::cout<<"thread: "<<pthread_self()<<" control command: shot"<<std::endl;
             c1->takeAshot();
+        }
+        else if(reqst.param("dir")=="gray")
+        {
+            if(c1->filterGray)
+                c1->filterGray = false;
+            else
+                c1->filterGray = true;
         }
 
         resps.status(200);
@@ -241,8 +243,12 @@ void CgiService::ProcessRequest(FCGX_Request *req)
         for(;;)
             try
             {
+                struct timespec ts;
+                clock_gettime(CLOCK_REALTIME, &ts);
+                ts.tv_sec ++;
                 pthread_mutex_lock(&c1->Mtx);
-                pthread_cond_wait(&c1->CondVar,&c1->Mtx);
+                pthread_cond_timedwait(&c1->CondVar,&c1->Mtx, &ts);
+                //pthread_cond_wait(&c1->CondVar,&c1->Mtx);
                 pthread_mutex_unlock(&c1->Mtx);
 
                 if(!resps.nextMJPG(c1->Buffer,c1->Len))

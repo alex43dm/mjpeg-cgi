@@ -14,6 +14,7 @@ using namespace panasonic;
 cam::cam(const std::string &address, unsigned short remotePort, unsigned short localPort) :
     Mtx(PTHREAD_MUTEX_INITIALIZER),
     filterMarkName(false),
+    filterGray(false),
     exit(false),
     zoomChanged(false),
     state(state_t::initional),
@@ -70,11 +71,12 @@ cam::~cam()
 
 std::string cam::request(const std::string &cmd)
 {
-    Log::gdb("cam cmd: %s",cmd.c_str());
-
     std::string temp = httpClient->get("http://"+address+cmd);
 
-    Log::gdb("get: %s",temp.c_str());
+    if(temp.empty())
+    {
+        return temp;
+    }
 
     TiXmlDocument mDoc;
     TiXmlElement *camrply, *mElem;
@@ -83,9 +85,9 @@ std::string cam::request(const std::string &cmd)
     if(pTest == NULL && mDoc.Error())
     {
         Log::err("parse: "+temp+
-             " error: "+ mDoc.ErrorDesc()+
-             " row: "+std::to_string(mDoc.ErrorRow())+
-             " col: "+std::to_string(mDoc.ErrorCol()));
+                 " error: "+ mDoc.ErrorDesc()+
+                 " row: "+std::to_string(mDoc.ErrorRow())+
+                 " col: "+std::to_string(mDoc.ErrorCol()));
 
         return "";
     }
@@ -121,6 +123,15 @@ bool cam::stream(bool OnOff = true)
         }
         else
         {
+            pthread_mutex_lock(&Mtx);
+
+            Magick::Blob b1 = ImgMgk::def(State());
+            Len = b1.length();
+            memcpy(Buffer,b1.data(),Len);
+
+            pthread_cond_broadcast(&CondVar);
+            pthread_mutex_unlock(&Mtx);
+
             Log::err("cam: state: stream error");
             return false;
         }
@@ -151,21 +162,41 @@ bool cam::init()
     }
     else
     {
-        Log::err("cam: state: connected error");
+        Log::err("cam: state: connection error");
+
+        pthread_mutex_lock(&Mtx);
+
+        Magick::Blob b1 = ImgMgk::def("cam: state: connection error");
+        Len = b1.length();
+        memcpy(Buffer,b1.data(),Len);
+
+        pthread_cond_broadcast(&CondVar);
+        pthread_mutex_unlock(&Mtx);
+
+
         return false;
     }
-/*
-    if (request(CAM_RECMODE) == "ok")
-    {
-        Log::info("cam: state: ready");
-        state = state_t::ready;
-    }
-    else
-    {
-        Log::err("cam: state: ready error");
-        return false;
-    }
-*/
+    /*
+        if (request(CAM_RECMODE) == "ok")
+        {
+            Log::info("cam: state: ready");
+            state = state_t::ready;
+        }
+        else
+        {
+            Log::err("cam: state: ready error");
+                pthread_mutex_lock(&Mtx);
+
+                Magick::Blob b1 = ImgMgk::def(State());
+                Len = b1.length();
+                memcpy(Buffer,b1.data(),Len);
+
+                pthread_cond_broadcast(&CondVar);
+                pthread_mutex_unlock(&Mtx);
+
+            return false;
+        }
+    */
     if(stream(true))
     {
         state = state_t::startstream;
@@ -224,6 +255,29 @@ int cam::applyZoom(zoom_t lzoom)
     else return -1;
 }
 
+std::string cam::State()
+{
+    switch(state)
+    {
+    case state_t::initional:
+        return "initional";
+    case state_t::connected:
+        return "connected";
+    case state_t::ready:
+        return "ready";
+    case state_t::startstream:
+        return "startstream";
+    case state_t::stream:
+        return "stream";
+    case state_t::dispose:
+        return "dispose";
+    case state_t::error:
+        return "error";
+    default:
+        return "unknown";
+    }
+}
+
 void cam::reciever()
 {
     const char JpegHeaderStart[3] = { static_cast<const char>(0xFF), static_cast<const char>(0xD8), 0 };
@@ -234,6 +288,16 @@ void cam::reciever()
     enum { started, ended } jpegState = ended;
     int numRecieved;
     size_t pos;
+
+    //init image
+    pthread_mutex_lock(&Mtx);
+
+    Magick::Blob b1 = ImgMgk::def();
+    Len = b1.length();
+    memcpy(Buffer,b1.data(),Len);
+
+    pthread_cond_broadcast(&CondVar);
+    pthread_mutex_unlock(&Mtx);
 
     while(!init() && !exit)
     {
@@ -277,6 +341,13 @@ void cam::reciever()
                         if(filterMarkName)
                         {
                             Magick::Blob b1 = ImgMgk::conv(tempOutputStorage.c_str(),tempOutputStorage.size(), "oNe");
+
+                            Len = b1.length();
+                            memcpy(Buffer,b1.data(),Len);
+                        }
+                        else if(filterGray)
+                        {
+                            Magick::Blob b1 = ImgMgk::gray(tempOutputStorage.c_str(),tempOutputStorage.size());
 
                             Len = b1.length();
                             memcpy(Buffer,b1.data(),Len);

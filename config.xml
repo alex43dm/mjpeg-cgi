@@ -17,4 +17,8 @@
         <stream_port>9999</stream_port>
         <alive_inteval>3</alive_inteval>
     </camera>
+    <upnp>
+        <ip></ip>
+        <MediaServerFriendlyName>V550628C30</MediaServerFriendlyName>
+    </upnp>
 </root>
