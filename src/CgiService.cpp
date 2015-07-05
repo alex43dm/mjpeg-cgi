@@ -104,7 +104,7 @@ std::string CgiService::getFileContents(const std::string &filename)
 
 void CgiService::run()
 {
-    while(c1->init())
+    while(!c1->init())
     {
         sleep(3);
     }

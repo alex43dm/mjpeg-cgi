@@ -84,6 +84,9 @@ public:
     bool init();
     void run(const state_t &s);
     void reciever();
+    bool stream(bool OnOff);
+protected:
+    bool exit;
 private:
     int devSock;
     bool zoomChanged;
@@ -93,6 +96,9 @@ private:
     state_t state;
     zoom_t zoom;
     sockaddr_in sa;
+    pthread_t _pThread;
+
+
     void dispatcher();
     int applyZoom();
 
@@ -101,6 +107,8 @@ private:
 
     static const char JpegHeaderStart[3];
     static const char JpegHeaderEnd[3];
+
+    static void *streamUpdate(void*);
 };
 }
 #endif

@@ -12,6 +12,7 @@ using namespace panasonic;
 
 cam::cam(const std::string &address, unsigned short remotePort, unsigned short localPort) :
     Mtx(PTHREAD_MUTEX_INITIALIZER),
+    exit(false),
     zoomChanged(false),
     state(state_t::initional),
     zoom(zoom_t::none)
@@ -60,6 +61,7 @@ cam::~cam()
 {
     state = state_t::dispose;
     pthread_cond_destroy(&CondVar);
+    pthread_join(_pThread,0);
 }
 
 std::string cam::request(const std::string &cmd)
@@ -67,6 +69,8 @@ std::string cam::request(const std::string &cmd)
     int s1;
     std::string result, temp;
     static char buffer[10240];
+
+    Log::gdb("cam cmd: %s",cmd.c_str());
 
     if ((s1 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
     {
@@ -110,16 +114,25 @@ std::string cam::request(const std::string &cmd)
     std::size_t start = temp.find("<result>");
     if (start == std::string::npos)
     {
+        Log::err("no result open tag");
         return "";
     }
     else start += 8;
 
     std::size_t end = temp.find("</result>");
     if (end == std::string::npos)
+    {
+        Log::err("no result close tag");
         return "";
+    }
+
     result = temp.substr(start, end - start);
     if (cmd != CAM_GETSTATE)
+    {
+        Log::gdb("result: %s",result.c_str());
         return result;
+    }
+
 
     start = temp.find("<livestream>");
     if (start == std::string::npos)
@@ -132,41 +145,90 @@ std::string cam::request(const std::string &cmd)
     return result;
 }
 
+bool cam::stream(bool OnOff = true)
+{
+    if(OnOff)
+    {
+        if (request(camReqStreamString) == "ok")
+        {
+            Log::info("cam: state: stream");
+            state = state_t::stream;
+        }
+        else
+        {
+            Log::err("cam: state: stream error");
+            return false;
+        }
+    }
+    else
+    {
+        if (request(CAM_STOPSTREAM) == "ok")
+        {
+            Log::info("cam: state: stream");
+            state = state_t::stream;
+        }
+        else
+        {
+            Log::err("cam: state: stream error");
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool cam::init()
 {
     if (request(CAM_CAPABILITY_REQUEST) == "ok")
     {
         state = state_t::connected;
+        Log::info("cam: state: connected");
     }
     else
     {
-        Log::err("cam: CAM_CAPABILITY_REQUEST");
+        Log::err("cam: state: connected error");
         return false;
     }
 
     if (request(CAM_RECMODE) == "ok")
     {
+        Log::info("cam: state: ready");
         state = state_t::ready;
     }
     else
     {
-        Log::err("cam: CAM_RECMODE");
+        Log::err("cam: state: ready error");
         return false;
     }
 
-    if (request(camReqStreamString) == "ok")
+    if(stream(true))
     {
-        state = state_t::stream;
-    }
-    else
-    {
-        Log::err("cam: camReqStreamString");
-        return false;
+
+        if(pthread_create(&_pThread, NULL, &this->streamUpdate, this))
+        {
+            Log::err("creating thread failed");
+            ::exit(1);
+        }
+
+        Log::info("cam is inited");
+        return true;
     }
 
-    Log::info("cam is inited");
+    return false;
+}
 
-    return true;
+void *cam::streamUpdate(void *data)
+{
+    cam *c1 = (cam*)data;
+
+    sleep(3);
+    while(!c1->exit)
+    {
+        c1->stream(true);
+        sleep(3);
+    }
+
+    return NULL;
 }
 
 void cam::dispatcher()
