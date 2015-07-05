@@ -37,7 +37,7 @@ size_t HttpClient::callback(void *contents, size_t csize, size_t nmemb, void *da
 	//memcopy(p, contents, csize*nmemb);
 	std::string s;
 	s.insert(0, (const char*)contents, csize * nmemb);
-	*hc->responce += s;
+	hc->responce->append(s);
 	hc->downloadSize += csize * nmemb;
 
 	return csize * nmemb;

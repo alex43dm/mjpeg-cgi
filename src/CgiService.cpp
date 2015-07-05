@@ -198,6 +198,31 @@ void CgiService::ProcessRequest(FCGX_Request *req)
         {
             std::cout<<"thread: "<<pthread_self()<<" control command: right"<<std::endl;
         }
+        else if(reqst.param("dir")=="zoomin")
+        {
+            std::cout<<"thread: "<<pthread_self()<<" control command: zoomin"<<std::endl;
+            c1->applyZoom(panasonic::zoom_t::in);
+        }
+        else if(reqst.param("dir")=="zoominfast")
+        {
+            std::cout<<"thread: "<<pthread_self()<<" control command: zoominfast"<<std::endl;
+            c1->applyZoom(panasonic::zoom_t::fastIn);
+        }
+        else if(reqst.param("dir")=="zoomout")
+        {
+            std::cout<<"thread: "<<pthread_self()<<" control command: zoomout"<<std::endl;
+            c1->applyZoom(panasonic::zoom_t::out);
+        }
+        else if(reqst.param("dir")=="zoomoutfast")
+        {
+            std::cout<<"thread: "<<pthread_self()<<" control command: zoomoutfast"<<std::endl;
+            c1->applyZoom(panasonic::zoom_t::fastOut);
+        }
+        else if(reqst.param("dir")=="zoomstop")
+        {
+            std::cout<<"thread: "<<pthread_self()<<" control command: zoomstop"<<std::endl;
+            c1->applyZoom(panasonic::zoom_t::none);
+        }
 
         resps.status(200);
         return;

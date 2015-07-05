@@ -249,10 +249,10 @@ void *cam::streamUpdate(void *data)
     return NULL;
 }
 
-int cam::applyZoom()
+int cam::applyZoom(zoom_t lzoom)
 {
     std::string result;
-    switch (zoom)
+    switch (lzoom)
     {
     case zoom_t::none:
         result = request(CAM_ZOOMSTOP);

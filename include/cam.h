@@ -62,6 +62,7 @@ public:
     void run(const state_t &s);
     void reciever();
     bool stream(bool OnOff);
+    int applyZoom(zoom_t lzoom);
 protected:
     bool exit;
 private:
@@ -75,9 +76,6 @@ private:
     HttpClient *httpClient;
     unsigned short localPort;
     std::string address;
-
-
-    int applyZoom();
 
     cam(const cam&);
     cam& operator=(const cam&);

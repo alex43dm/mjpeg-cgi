@@ -58,6 +58,26 @@ $(document).ready(function(){
         $.ajax({url: "http://localhost/mjpeg?action=control&dir=right", success: function(result){
         }});
     });
+    $("#zoomin").click(function(){
+        $.ajax({url: "http://localhost/mjpeg?action=control&dir=zoomin", success: function(result){
+        }});
+    });
+    $("#zoominfast").click(function(){
+        $.ajax({url: "http://localhost/mjpeg?action=control&dir=zoominfast", success: function(result){
+        }});
+    });
+    $("#zoomout").click(function(){
+        $.ajax({url: "http://localhost/mjpeg?action=control&dir=zoomout", success: function(result){
+        }});
+    });
+    $("#zoomoutfast").click(function(){
+        $.ajax({url: "http://localhost/mjpeg?action=control&dir=zoomoutfast", success: function(result){
+        }});
+    });
+    $("#zoomstop").click(function(){
+        $.ajax({url: "http://localhost/mjpeg?action=control&dir=zoomstop", success: function(result){
+        }});
+    });
 });
 </script>
 
@@ -73,6 +93,11 @@ $(document).ready(function(){
         <button id="up" name="up" value="up">up</button>
         <button id="down" name="down" value="down">down</button>
         <button id="right" name="right" value="right">right</button>
+        <button id="zoomin" name="zoomin" value="zoomin">zoomin</button>
+        <button id="zoominfast" name="zoominfast" value="zoominfast">zoominfast</button>
+        <button id="zoomout" name="zoomout" value="zoomout">zoomout</button>
+        <button id="zoomoutfast" name="zoomoutfast" value="zoomoutfast">zoomoutfast</button>
+        <button id="zoomstop" name="zoomstop" value="zoomstop">zoomstop</button>
       </div>
     </div>
 
