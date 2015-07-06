@@ -42,6 +42,7 @@ public:
     static void warn(const char* fmt, ... );
     static void info(const char* fmt, ... );
     static void gdb(const char* fmt, ... );
+    static void debug(const char* fmt, ... );
 
     static int memUsage();
     static float cpuUsage();

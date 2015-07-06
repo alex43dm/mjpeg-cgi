@@ -17,7 +17,6 @@ cam::cam(const std::string &address, unsigned short remotePort, unsigned short l
     filterGray(false),
     exit(false),
     zoomChanged(false),
-    state(state_t::initional),
     zoom(zoom_t::none),
     localPort(localPort),
     address(address)
@@ -35,7 +34,6 @@ cam::cam(const std::string &address, unsigned short remotePort, unsigned short l
     if (inet_pton(AF_INET, address.c_str(), &(sa.sin_addr)) < 1)
     {
         Log::err("Invalid destination IP address: %s",address.c_str());
-        state = state_t::dispose;
         return;
     }
     sa.sin_family = AF_INET;
@@ -49,13 +47,11 @@ cam::cam(const std::string &address, unsigned short remotePort, unsigned short l
     if ((devSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
     {
         Log::err("socket() failed with error code : ");
-        state = state_t::dispose;
         return;
     }
     if (::bind(devSock, (sockaddr*)&saLocal, sizeof(saLocal)) == -1)
     {
         Log::err("Bind failed with error code : ");
-        state = state_t::dispose;
         return;
     }
 }
@@ -64,7 +60,6 @@ cam::cam(const std::string &address, unsigned short remotePort, unsigned short l
 cam::~cam()
 {
     delete httpClient;
-    state = state_t::dispose;
     pthread_cond_destroy(&CondVar);
     pthread_join(_pThread,0);
 }
@@ -116,23 +111,15 @@ bool cam::stream(bool OnOff = true)
 {
     if(OnOff)
     {
-        if (request(CAM_STREAM+std::to_string(localPort)) == "ok")
+        std::string ret = request(CAM_STREAM+std::to_string(localPort));
+        if ( ret == "ok")
         {
             Log::info("cam: state: stream");
-            state = state_t::stream;
         }
         else
         {
-            pthread_mutex_lock(&Mtx);
-
-            Magick::Blob b1 = ImgMgk::def(State());
-            Len = b1.length();
-            memcpy(Buffer,b1.data(),Len);
-
-            pthread_cond_broadcast(&CondVar);
-            pthread_mutex_unlock(&Mtx);
-
-            Log::err("cam: state: stream error");
+            witeImage("cam stream request error :"+ret);
+            Log::err("cam: state: stream error: %s",ret.c_str());
             return false;
         }
     }
@@ -141,7 +128,6 @@ bool cam::stream(bool OnOff = true)
         if (request(CAM_STOPSTREAM) == "ok")
         {
             Log::info("cam: state: stream");
-            state = state_t::stream;
         }
         else
         {
@@ -155,25 +141,24 @@ bool cam::stream(bool OnOff = true)
 
 bool cam::init()
 {
-    if (request(CAM_CAPABILITY_REQUEST) == "ok")
+    getState();
+
+    std::string ret = request(CAM_CAPABILITY_REQUEST);
+    if( ret == "ok")
     {
-        state = state_t::connected;
         Log::info("cam: state: connected");
+
+        getState();
+        if(!state.livestream)
+        {
+            Log::info("cam: livestream off");
+            return false;
+        }
     }
     else
     {
-        Log::err("cam: state: connection error");
-
-        pthread_mutex_lock(&Mtx);
-
-        Magick::Blob b1 = ImgMgk::def("cam: state: connection error");
-        Len = b1.length();
-        memcpy(Buffer,b1.data(),Len);
-
-        pthread_cond_broadcast(&CondVar);
-        pthread_mutex_unlock(&Mtx);
-
-
+        Log::err("cam: state: connection error: %s",ret.c_str());
+        witeImage("cam: state: connection error: "+ret);
         return false;
     }
     /*
@@ -185,21 +170,11 @@ bool cam::init()
         else
         {
             Log::err("cam: state: ready error");
-                pthread_mutex_lock(&Mtx);
-
-                Magick::Blob b1 = ImgMgk::def(State());
-                Len = b1.length();
-                memcpy(Buffer,b1.data(),Len);
-
-                pthread_cond_broadcast(&CondVar);
-                pthread_mutex_unlock(&Mtx);
-
             return false;
         }
     */
     if(stream(true))
     {
-        state = state_t::startstream;
         if(pthread_create(&_pThread, NULL, &this->streamUpdate, this))
         {
             Log::err("creating thread failed");
@@ -222,6 +197,7 @@ void *cam::streamUpdate(void *data)
     {
         c1->stream(true);
         sleep(cfg->camAliveInterval);
+        c1->getState();
     }
 
     return NULL;
@@ -255,29 +231,6 @@ int cam::applyZoom(zoom_t lzoom)
     else return -1;
 }
 
-std::string cam::State()
-{
-    switch(state)
-    {
-    case state_t::initional:
-        return "initional";
-    case state_t::connected:
-        return "connected";
-    case state_t::ready:
-        return "ready";
-    case state_t::startstream:
-        return "startstream";
-    case state_t::stream:
-        return "stream";
-    case state_t::dispose:
-        return "dispose";
-    case state_t::error:
-        return "error";
-    default:
-        return "unknown";
-    }
-}
-
 void cam::reciever()
 {
     const char JpegHeaderStart[3] = { static_cast<const char>(0xFF), static_cast<const char>(0xD8), 0 };
@@ -306,8 +259,6 @@ void cam::reciever()
 
     while(!exit)
     {
-        if (state == state_t::dispose)
-            break;
         numRecieved = recv(devSock, packetStorage, sizeof(packetStorage), 0);
         if (numRecieved > 0)
         {
@@ -335,28 +286,35 @@ void cam::reciever()
                     {
                         tempOutputStorage.append(parserStorage, 0, pos + 2);
 
-                        pthread_mutex_lock(&Mtx);
+                        Magick::Blob b1;
 
-
+                        if(filterGray)
+                        {
+                            b1 = ImgMgk::gray(tempOutputStorage.c_str(),tempOutputStorage.size(),
+                                             Config::currentDateTime());
+                        }
+                        else
+                        {
+                            b1 = ImgMgk::conv(tempOutputStorage.c_str(),tempOutputStorage.size(),
+                                             Config::currentDateTime());
+                        }
+                        /*
                         if(filterMarkName)
                         {
-                            Magick::Blob b1 = ImgMgk::conv(tempOutputStorage.c_str(),tempOutputStorage.size(), "oNe");
+                            b1 = ImgMgk::conv(tempOutputStorage.c_str(),tempOutputStorage.size(), "oNe");
 
-                            Len = b1.length();
-                            memcpy(Buffer,b1.data(),Len);
-                        }
-                        else if(filterGray)
-                        {
-                            Magick::Blob b1 = ImgMgk::gray(tempOutputStorage.c_str(),tempOutputStorage.size());
-
-                            Len = b1.length();
-                            memcpy(Buffer,b1.data(),Len);
                         }
                         else
                         {
                             Len = tempOutputStorage.size();
                             memcpy(Buffer,tempOutputStorage.c_str(),Len);
-                        }
+                        }*/
+
+                        //copy image for output
+                        pthread_mutex_lock(&Mtx);
+
+                        Len = b1.length();
+                        memcpy(Buffer,b1.data(),Len);
 
                         pthread_cond_broadcast(&CondVar);
                         pthread_mutex_unlock(&Mtx);
@@ -370,4 +328,154 @@ void cam::reciever()
         }
 
     }
+}
+
+
+void cam::getState()
+{
+    std::string temp = httpClient->get("http://"+address+CAM_GETSTATE);
+
+    if(temp.empty())
+    {
+        return;
+    }
+
+    TiXmlDocument mDoc;
+    TiXmlElement *camrply, *mElem, *mel, *xel;
+
+    const char* pTest = mDoc.Parse(temp.c_str(), 0 , TIXML_ENCODING_UTF8);
+    if(pTest == NULL && mDoc.Error())
+    {
+        Log::err("parse: "+temp+
+                 " error: "+ mDoc.ErrorDesc()+
+                 " row: "+std::to_string(mDoc.ErrorRow())+
+                 " col: "+std::to_string(mDoc.ErrorCol()));
+
+        return;
+    }
+
+    camrply = mDoc.FirstChildElement("camrply");
+
+    if(!camrply)
+    {
+        Log::err("does not found camrply section in file: "+temp);
+        return;
+    }
+
+    if( (mElem = camrply->FirstChildElement("result")) )
+    {
+        std::string result = mElem->GetText();
+        if( result == "ok")
+        {
+            if( (mElem = camrply->FirstChildElement("state")) )
+            {
+                if( (mel = mElem->FirstChildElement("batt")) && (mel->GetText()) )
+                {
+                    state.batt = mel->GetText();
+                }
+                if( (mel = mElem->FirstChildElement("batttype")) && (mel->GetText()) )
+                {
+                    state.batttype = mel->GetText();
+                }
+                if( (mel = mElem->FirstChildElement("livestream")) && (mel->GetText()) )
+                {
+                    state.livestream = std::string(mel->GetText()) == "on" ? true : false;
+                }
+                if( (mel = mElem->FirstChildElement("rec")) && (mel->GetText()) )
+                {
+                    state.rec = std::string(mel->GetText()) == "on" ? true : false;
+                }
+                if( (mel = mElem->FirstChildElement("mode")) && (mel->GetText()) )
+                {
+                    Mode(std::string(mel->GetText()));
+                }
+                if( (mel = mElem->FirstChildElement("recremaincapacity")) && (mel->GetText()) )
+                {
+                    bzero(&state.recremaincapacity,sizeof(state.recremaincapacity));
+                    if( (xel = mElem->FirstChildElement("hour")) && (xel->GetText()) )
+                    {
+                        state.recremaincapacity.tm_hour = static_cast<unsigned>(atoi(mel->GetText()));
+                    }
+                    if( (xel = mElem->FirstChildElement("min")) && (xel->GetText()) )
+                    {
+                        state.recremaincapacity.tm_min = static_cast<unsigned>(atoi(mel->GetText()));
+                    }
+                }
+                if( (mel = mElem->FirstChildElement("remaincapacity")) && (mel->GetText()) )
+                {
+                    state.remaincapacity = static_cast<unsigned>(atoi(mel->GetText()));
+                }
+                if( (mel = mElem->FirstChildElement("sdcardstatus")) && (mel->GetText()) )
+                {
+                    state.sdcardstatus = mel->GetText();
+                }
+                if( (mel = mElem->FirstChildElement("operation")) && (mel->GetText()) )
+                {
+                    state.operation = mel->GetText();
+                }
+                if( (mel = mElem->FirstChildElement("version")) && (mel->GetText()) )
+                {
+                    state.version = mel->GetText();
+                }
+                if( (mel = mElem->FirstChildElement("rectime")) && (mel->GetText()) )
+                {
+                    bzero(&state.rectime,sizeof(state.rectime));
+                    if( (xel = mElem->FirstChildElement("hour")) && (xel->GetText()) )
+                    {
+                        state.rectime.tm_hour = static_cast<unsigned>(atoi(mel->GetText()));
+                    }
+                    if( (xel = mElem->FirstChildElement("min")) && (xel->GetText()) )
+                    {
+                        state.rectime.tm_min = static_cast<unsigned>(atoi(mel->GetText()));
+                    }
+                    if( (xel = mElem->FirstChildElement("sec")) && (xel->GetText()) )
+                    {
+                        state.rectime.tm_sec = static_cast<unsigned>(atoi(mel->GetText()));
+                    }
+                }
+                if( (mel = mElem->FirstChildElement("temperature")) && (mel->GetText()) )
+                {
+                    state.temperature = mel->GetText();
+                }
+                if( (mel = mElem->FirstChildElement("pantiltmode")) && (mel->GetText()) )
+                {
+                    state.pantiltmode = mel->GetText();
+                }
+            }
+        }
+        else
+        {
+            Log::err("cannot get cam status: %s",result.c_str());
+        }
+    }
+    else
+    {
+        Log::err("does not found result section in file: "+temp);
+    }
+}
+
+void cam::witeImage(const std::string &mes)
+{
+    pthread_mutex_lock(&Mtx);
+
+    Magick::Blob b1 = ImgMgk::def(mes);
+    Len = b1.length();
+    memcpy(Buffer,b1.data(),Len);
+
+    pthread_cond_broadcast(&CondVar);
+    pthread_mutex_unlock(&Mtx);
+}
+
+camMode cam::Mode(const std::string &mode)
+{
+    if( mode =="playmode" )
+        state.mode = camMode::play;
+    else if( mode =="recmode" )
+        state.mode = camMode::rec;
+    else if( mode =="pivmode" )
+        state.mode = camMode::pict;
+    else if( mode =="3boxplaymode" )
+        state.mode = camMode::xboxplay;
+
+    return state.mode;
 }

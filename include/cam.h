@@ -39,16 +39,30 @@ std::string const CAM_HIGHTLIGHTCANCEL   = "/cam.cgi?mode=camcmd&value=highlight
 std::string const CAM_RECSTART           = "/cam.cgi?mode=camcmd&value=recstart";
 std::string const CAM_RECSTOP            = "/cam.cgi?mode=camcmd&value=recstop";
 
-
-enum state_t
+enum class camMode
 {
-    initional,
-    connected,
-    ready,
-    startstream,
-    stream,
-    dispose,
-    error
+    play,
+    rec,
+    pict,
+    xboxplay
+};
+
+struct camState
+{
+    std::string batt;
+    std::string batttype;
+    bool livestream;
+    bool rec;
+    camMode mode;
+    struct tm recremaincapacity;
+    unsigned remaincapacity;
+    std::string sdcardstatus;
+    std::string operation;
+    std::string sd_memor;
+    std::string version;
+    struct tm rectime;
+    std::string temperature;
+    std::string pantiltmode;
 };
 
 enum zoom_t
@@ -74,7 +88,7 @@ public:
     ~cam();
 
     bool init();
-    void run(const state_t &s);
+    void run();
     void reciever();
     bool stream(bool OnOff);
     int applyZoom(zoom_t lzoom);
@@ -85,13 +99,13 @@ private:
     int devSock;
     bool zoomChanged;
     std::string request(const std::string &cmd);
-    state_t state;
     zoom_t zoom;
     sockaddr_in sa;
     pthread_t _pThread;
     HttpClient *httpClient;
     unsigned short localPort;
     std::string address;
+    camState state;
 
     cam(const cam&);
     cam& operator=(const cam&);
@@ -100,7 +114,10 @@ private:
     static const char JpegHeaderEnd[3];
 
     static void *streamUpdate(void*);
-    std::string State();
+    std::string Mode();
+    void getState();
+    void witeImage(const std::string &mes);
+    camMode Mode(const std::string &mode);
 };
 }
 #endif

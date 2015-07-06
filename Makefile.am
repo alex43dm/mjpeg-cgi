@@ -11,19 +11,33 @@ src/Config.cpp \
 src/Server.cpp \
 src/cam.cpp \
 src/HttpClient.cpp \
-src/ImgMgk.cpp
+src/ImgMgk.cpp \
+src/DeviceList.cpp  \
+src/Thread.cpp  \
+src/UPnP_MediaRenderer.cpp \
+src/Container.cpp  \
+src/Item.cpp \
+src/UPnP_CP.cpp  \
+src/UPnP_MediaServer.cpp \
+src/Device.cpp  \
+src/Icon.cpp  \
+src/UPnP.cpp   \
+src/xmltools.cpp \
+src/Service.cpp
+
+
 
 INCLUDE=-Iinclude -I/usr/include
 DEBDEP=bash (>= 2.05a-11), awk, procps (>= 1:2.0.7-8), sed (>= 3.02-8), grep (>= 2.4.2-3), coreutils (>= 5.0-5)
 BUILDDIR=$(PWD)/rpmbuild
 
 if DEBUG
-AM_CXXFLAGS = -g -O0 -Wall -DDEBUG $(INCLUDE) `Magick++-config --cppflags --cxxflags`
+AM_CXXFLAGS = -std=c++11 -g -O0 -Wall -DDEBUG $(INCLUDE) `Magick++-config --cppflags --cxxflags`
 bin_PROGRAMS = mjpeg-cgi-dev
 mjpeg_cgi_dev_SOURCES = $(SOURCES)
 mjpeg_cgi_dev_LDFLAGS = $(LD_ADD) `Magick++-config --ldflags --libs`
 else
-AM_CXXFLAGS = -Wall  $(CFLAGS) $(INCLUDE)
+AM_CXXFLAGS = -std=c++11 -Wall  $(CFLAGS) $(INCLUDE)
 bin_PROGRAMS = mjpeg-cgi
 mjpeg_cgi_SOURCES = $(SOURCES)
 mjpeg_cgi_LDFLAGS = $(LD_ADD)

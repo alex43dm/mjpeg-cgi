@@ -76,6 +76,19 @@ void Log::gdb(const char* fmt, ... )
 #endif // DEBUG
 }
 
+void Log::debug(const char* fmt, ... )
+{
+#ifdef DEBUG
+    va_list args;
+
+    va_start (args, fmt);
+    vsprintf(buffer, fmt, args);
+    va_end (args);
+
+    printf("%s",buffer);
+    syslog(LOG_DEBUG, "%s", buffer);
+#endif // DEBUG
+}
 int Log::sync()
 {
     if (buffer_.length())

@@ -7,7 +7,7 @@
         <group>www-data</group>
         <socket_path>/tmp/mjgpg-cgi/sock</socket_path>
         <children>7</children>
-        <fps>0.5</fps>
+        <fps>25</fps>
         <buffersize>65536</buffersize>
         <indexFile>/home/alex/Projects/mjpeg-cgi/index.html</indexFile>
     </server>
@@ -16,6 +16,8 @@
         <port>80</port>
         <stream_port>9999</stream_port>
         <alive_inteval>3</alive_inteval>
+        <width>640</width>
+        <height>480</height>
     </camera>
     <upnp>
         <ip></ip>

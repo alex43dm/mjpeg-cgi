@@ -1,0 +1,17 @@
+#ifndef XMLTOOLS_H_INCLUDED
+#define XMLTOOLS_H_INCLUDED
+
+#include <string>
+
+const char* xml_getChildElementValue( IXML_Element* parent, const char* tagName );
+IXML_Document* parseBrowseResult( IXML_Document* doc );
+const char* xml_getChildElement( IXML_Element* parent, const char* tagName );
+const char* xml_getElementValue( IXML_Element* parent, const char* tagName );
+IXML_Document*  clearXmlDoc(IXML_Document* doc);
+void clearXmlString(std::string &doc);
+
+std::string xmlGetChildElementValue( IXML_Element* parent,  const std::string tagName );
+std::string xmlGetChildElement( IXML_Element* parent, const char* tagName );
+std::string xmlGetChildElementAttr( IXML_Element* parent, const char* tagName, const char* attrName );
+
+#endif // XMLTOOLS_H_INCLUDED

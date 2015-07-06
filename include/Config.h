@@ -6,13 +6,14 @@
 
 #include <tinyxml.h>
 
+#define NANO 1000000000L
+
 class Config
 {
 public:
-    //new params
     std::string SocketPath;
     unsigned ServerThreads;
-    unsigned FPS;
+    float FPS;
     size_t BufferSize;
 
     int         instanceId;
@@ -27,6 +28,8 @@ public:
     unsigned camPort;
     unsigned camJpgLocalPort;
     unsigned camAliveInterval;
+    unsigned camWidth;
+    unsigned camHeight;
 
 
     static Config* Instance();
@@ -46,6 +49,10 @@ public:
         return atoi(s.c_str());
     }
 
+    static const std::string currentDateTime();
+    static std::string getFileContents(const std::string &fileName);
+    static struct timespec getThreadWait();
+
 protected:
     bool Load();
 private:
@@ -57,7 +64,6 @@ private:
     std::string cfgFilePath;
 
     int getTime(const char *p);
-    std::string getFileContents(const std::string &fileName);
     void exit(const std::string &mes);
     bool checkPath(const std::string &path_, bool checkWrite, bool isFile, std::string &mes);
 };

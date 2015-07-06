@@ -67,40 +67,9 @@ CgiService::CgiService(unsigned threadsNumber, const std::string &serverSocketPa
     pthread_attr_destroy(attributes);
     free(attributes);
 
-    _pIndexHtml = getFileContents(cfg->indexFile);
+    _pIndexHtml = Config::getFileContents(cfg->indexFile);
 
     c1 = new panasonic::cam(cfg->camIp,cfg->camPort,cfg->camJpgLocalPort);
-}
-
-std::string CgiService::getFileContents(const std::string &filename)
-{
-    int fd;
-    struct stat stat_buf;
-    std::string retString;
-
-    if( (fd = open(filename.c_str(), O_RDONLY))<2 )
-    {
-        Log::err("error open file: %s",filename.c_str());
-    }
-
-    ssize_t sz = fstat(fd, &stat_buf) == 0 ? stat_buf.st_size : -1;
-    char *buf = (char*)malloc(sz);
-
-    bzero(buf,sz);
-
-    int ret = read(fd, buf, sz);
-
-    if( ret != sz )
-    {
-        printf("Error read file: %s",filename.c_str());
-    }
-    close(fd);
-
-    retString = std::string(buf,ret);
-
-    free(buf);
-
-    return retString;
 }
 
 void CgiService::run()
@@ -243,9 +212,8 @@ void CgiService::ProcessRequest(FCGX_Request *req)
         for(;;)
             try
             {
-                struct timespec ts;
-                clock_gettime(CLOCK_REALTIME, &ts);
-                ts.tv_sec ++;
+                struct timespec ts = Config::getThreadWait();
+
                 pthread_mutex_lock(&c1->Mtx);
                 pthread_cond_timedwait(&c1->CondVar,&c1->Mtx, &ts);
                 //pthread_cond_wait(&c1->CondVar,&c1->Mtx);

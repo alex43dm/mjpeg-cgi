@@ -12,12 +12,6 @@ AC_PROG_INSTALL
 AC_LANG_CPLUSPLUS
 AX_CXX_COMPILE_STDCXX_11
 
-dnl Check for libtool
-dnl LT_PREREQ([2.2.6])
-dnl LT_INIT([disable-static])
-dnl LTCFLAGS="-O2"
-dnl LTCXXFLAGS="-O2"
-
 AC_SUBST([DOLLAR_SIGN],[$])
 
 AC_ARG_ENABLE(debug,
@@ -29,12 +23,20 @@ AM_CONDITIONAL([DEBUG], test x"$debug" = x"true")
 
 if test x$debug == xtrue; then
 AC_DEFINE(DEBUG, 1, [debug enable])
+
+AC_SUBST([AM_CPPFLAGS])
+AC_SUBST([AM_CFLAGS])
+
+CFLAGS=""
+CXXFLAGS=""
 fi
 
 AC_CHECK_LIB([pthread], [main])
 AC_CHECK_LIB([fcgi], [main])
 AC_CHECK_LIB([tinyxml], [main])
 AC_CHECK_LIB([curl], [main])
+AC_CHECK_LIB([upnp], [main])
+AC_CHECK_LIB([ixml], [main])
 
 dnl Checks for library functions.
 AC_FUNC_MALLOC

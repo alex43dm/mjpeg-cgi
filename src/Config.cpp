@@ -127,7 +127,7 @@ bool Config::Load()
 
         if( (mel = mElem->FirstChildElement("fps")) && (mel->GetText()) )
         {
-            FPS = static_cast<unsigned>(1000000 / strtof(mel->GetText(),NULL));
+            FPS = strtof(mel->GetText(),NULL);
         }
     }
     else
@@ -141,20 +141,25 @@ bool Config::Load()
         {
             camJpgLocalPort = static_cast<unsigned>(atoi(mel->GetText()));
         }
-
         if( (mel = mElem->FirstChildElement("ip")) && (mel->GetText()) )
         {
             camIp = mel->GetText();
         }
-
         if( (mel = mElem->FirstChildElement("port")) && (mel->GetText()) )
         {
             camPort = static_cast<unsigned>(atoi(mel->GetText()));
         }
-
         if( (mel = mElem->FirstChildElement("alive_inteval")) && (mel->GetText()) )
         {
             camAliveInterval = static_cast<unsigned>(atoi(mel->GetText()));
+        }
+        if( (mel = mElem->FirstChildElement("width")) && (mel->GetText()) )
+        {
+            camWidth = static_cast<unsigned>(atoi(mel->GetText()));
+        }
+        if( (mel = mElem->FirstChildElement("height")) && (mel->GetText()) )
+        {
+            camHeight = static_cast<unsigned>(atoi(mel->GetText()));
         }
     }
     else
@@ -199,4 +204,38 @@ std::string Config::getFileContents(const std::string &fileName)
 
     std::clog<<"error open file: "<<fileName<<" error number: "<<errno<<std::endl;
     return std::string();
+}
+
+const std::string Config::currentDateTime()
+{
+    time_t     now = time(0);
+    struct tm  tstruct;
+    char       buf[80];
+    tstruct = *localtime(&now);
+    strftime(buf, sizeof(buf), "%d-%m-%Y %H:%M:%S", &tstruct);
+    return buf;
+}
+
+struct timespec Config::getThreadWait()
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+
+    if(cfg->FPS < 1)
+    {
+        ts.tv_sec += 1/cfg->FPS;
+    }
+    else
+    {
+        if(ts.tv_nsec + NANO / cfg->FPS > NANO)
+        {
+            ts.tv_sec++;
+            ts.tv_nsec =  ts.tv_nsec + NANO / cfg->FPS - NANO;
+        }
+        else
+        {
+            ts.tv_nsec += NANO / cfg->FPS;
+        }
+    }
+    return ts;
 }

@@ -31,6 +31,17 @@ HttpClient::~HttpClient()
 
 struct MemoryStruct
 {
+    MemoryStruct()
+    {
+        memory = (char*)malloc(1);
+        size = 0;
+    }
+
+    ~MemoryStruct()
+    {
+        free(memory);
+    }
+
     char *memory;
     size_t size;
 };
@@ -56,12 +67,9 @@ size_t HttpClient::callback(void *contents, size_t csize, size_t nmemb, void *da
 
 std::string HttpClient::get(const std::string &url)
 {
-    Log::gdb("get url: %s", url.c_str());
+//    Log::gdb("get url: %s", url.c_str());
 
     struct MemoryStruct chunk;
-
-    chunk.memory = (char*)malloc(1);
-    chunk.size = 0;
 
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
     curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
@@ -70,12 +78,10 @@ std::string HttpClient::get(const std::string &url)
     if(res != CURLE_OK)
     {
         Log::err("curl_easy_perform failed: %s after: %d", curl_easy_strerror(res),downloadSize);
-        free(chunk.memory);
         return "";
     }
 
     std::string ret = std::string(chunk.memory,chunk.size);
-    free(chunk.memory);
     return ret;
 }
 
