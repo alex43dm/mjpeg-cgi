@@ -70,13 +70,13 @@ Magick::Blob ImgMgk::gray(const void *data, size_t length, const std::string &te
         Magick::Image image;
         image.read(blob);
 
-        image.type( Magick::GrayscaleType );
         image.annotate(text, Magick::SouthEastGravity);
+        image.type( Magick::GrayscaleType );
 
         Magick::Blob blob1;
         image.magick("JPEG"); // Set JPEG output format
         image.write(&blob1);
-        return blob;
+        return blob1;
     }
     catch( std::exception &error_ )
     {

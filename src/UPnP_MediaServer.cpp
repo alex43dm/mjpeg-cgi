@@ -142,6 +142,24 @@ bool UPnP_MediaServer::wgetCurDir(const std::string &dirName)
     return true;
 }
 
+std::string UPnP_MediaServer::wgetLastImage(const std::string &dirName)
+{
+    Item* item;
+
+    for ( unsigned int j = 0; j < pointer->getNumItems(); j++ )
+    {
+        item = pointer->getItem(j);
+
+        if(verbose)
+        {
+            std::cout<<item->getTitle()<<" : "<<item->getResource()<<std::endl;
+        }
+    }
+
+    HttpClient ch = HttpClient();
+    return ch.get(std::string(item->getResource()),atoi(item->size.c_str()));
+}
+
 bool UPnP_MediaServer::rm(const std::string &id)
 {
     IXML_Document * doc = SendAction( ContentDirectory,"DestroyObject", 1, "ObjectID", id.c_str());

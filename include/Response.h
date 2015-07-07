@@ -15,6 +15,7 @@ class Response
         void status(unsigned status);
         void ok(const std::string &content, const std::string &cookie);
         void endMJPG();
+        bool sendMJPG(const std::string &);
     protected:
     private:
         FCGX_Request *req;

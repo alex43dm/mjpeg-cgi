@@ -59,14 +59,10 @@ $(document).ready(function(){
         }});
     });
     $("#zoomin")
-      .mouseover(function(){
+      .click(function(){
         $.ajax({url: "http://localhost/mjpeg?action=control&dir=zoomin", success: function(result){
         }});
-      })
-      .mouseout(function(){
-        $.ajax({url: "http://localhost/mjpeg?action=control&dir=zoostop", success: function(result){
-        }});
-      });
+    })
     $("#zoominfast").click(function(){
         $.ajax({url: "http://localhost/mjpeg?action=control&dir=zoominfast", success: function(result){
         }});

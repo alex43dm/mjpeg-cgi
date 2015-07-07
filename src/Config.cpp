@@ -167,6 +167,26 @@ bool Config::Load()
         exit("no camera section in config file. exit");
     }
 
+    if( (mElem = mRoot->FirstChildElement("upup")) )
+    {
+        if( (mel = mElem->FirstChildElement("listernIp")) && (mel->GetText()) )
+        {
+            upnpListernIp = mel->GetText();
+        }
+        if( (mel = mElem->FirstChildElement("mediaServerName")) && (mel->GetText()) )
+        {
+            upnpMediaServerName = mel->GetText();
+        }
+        if( (mel = mElem->FirstChildElement("searchDir")) && (mel->GetText()) )
+        {
+            upnpSearchDir = mel->GetText();
+        }
+    }
+    else
+    {
+        exit("no upup section in config file. exit");
+    }
+
     mIsInited = true;
     return mIsInited;
 }

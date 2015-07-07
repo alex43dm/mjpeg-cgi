@@ -3,7 +3,8 @@
 #include "Log.h"
 #include "HttpClient.h"
 
-HttpClient::HttpClient()
+HttpClient::HttpClient() :
+    Mtx(PTHREAD_MUTEX_INITIALIZER)
 {
     curl_global_init(CURL_GLOBAL_ALL);
     curl_handle = curl_easy_init();
@@ -31,19 +32,19 @@ HttpClient::~HttpClient()
 
 struct MemoryStruct
 {
+    char *buf;
+    size_t len;
+
     MemoryStruct()
     {
-        memory = (char*)malloc(1);
-        size = 0;
+        buf = (char*)malloc(1);
+        len = 0;
     }
 
     ~MemoryStruct()
     {
-        free(memory);
+        free(buf);
     }
-
-    char *memory;
-    size_t size;
 };
 
 size_t HttpClient::callback(void *contents, size_t csize, size_t nmemb, void *data)
@@ -51,54 +52,70 @@ size_t HttpClient::callback(void *contents, size_t csize, size_t nmemb, void *da
     size_t realsize = csize * nmemb;
     struct MemoryStruct *mem = (struct MemoryStruct *)data;
 
-    mem->memory = (char*)realloc(mem->memory, mem->size + realsize + 1);
-    if(mem->memory == NULL)
+    if(mem && mem->buf)
     {
-        Log::err("not enough memory (realloc returned NULL)\n");
-        return 0;
-    }
+        mem->buf = (char*)realloc(mem->buf, mem->len + realsize + 1);
+        if(mem->buf == NULL)
+        {
+            Log::err("not enough memory (realloc returned NULL)\n");
+            return 0;
+        }
 
-    memcpy(&(mem->memory[mem->size]), contents, realsize);
-    mem->size += realsize;
-    mem->memory[mem->size] = 0;
+        memcpy(&(mem->buf[mem->len]), contents, realsize);
+        mem->len += realsize;
+        mem->buf[mem->len] = 0;
+    }
 
     return realsize;
 }
 
 std::string HttpClient::get(const std::string &url)
 {
-//    Log::gdb("get url: %s", url.c_str());
+    std::string ret;
+    Log::gdb("get url: %s", url.c_str());
 
-    struct MemoryStruct chunk;
+    pthread_mutex_lock(&Mtx);
 
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
+    struct MemoryStruct *chunk = new MemoryStruct();
+
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)chunk);
     curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
     res = curl_easy_perform(curl_handle);
 
     if(res != CURLE_OK)
     {
-        Log::err("curl_easy_perform failed: %s after: %d", curl_easy_strerror(res),downloadSize);
-        return "";
+        Log::err("curl failed: %s after download: %db", curl_easy_strerror(res),downloadSize);
+    }
+    else
+    {
+        ret = std::string(chunk->buf,chunk->len);
     }
 
-    std::string ret = std::string(chunk.memory,chunk.size);
+    delete chunk;
+
+    pthread_mutex_unlock(&Mtx);
+
     return ret;
 }
 
 std::string HttpClient::get(const std::string &url, ssize_t sz)
 {
-    struct MemoryStruct chunk;
 
-    chunk.memory = (char*)malloc(1);
-    chunk.size = 0;
+    std::string ret;
 
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
+    Log::gdb("get url: &s", url.c_str());
+
+    pthread_mutex_lock(&Mtx);
+
+    struct MemoryStruct *chunk = new MemoryStruct();
+
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)chunk);
     curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
     res = curl_easy_perform(curl_handle);
 
     if(res != CURLE_OK)
     {
-        Log::err("curl_easy_perform failed: %s", curl_easy_strerror(res));
+        Log::err("curl failed: %s", curl_easy_strerror(res));
 
         if(downloadSize < sz)
         {
@@ -107,27 +124,35 @@ std::string HttpClient::get(const std::string &url, ssize_t sz)
             if(res != CURLE_OK)
             {
                 Log::err("curl_easy_perform failed(1): %s", curl_easy_strerror(res));
-                free(chunk.memory);
-                return "";
+            }
+            else
+            {
+                ret = std::string(chunk->buf,chunk->len);
             }
         }
     }
+    else
+    {
+        ret = std::string(chunk->buf,chunk->len);
+    }
 
-    std::string ret = std::string(chunk.memory,chunk.size);
-    free(chunk.memory);
+    delete chunk;
+
+    pthread_mutex_unlock(&Mtx);
+
     return ret;
 }
 
 std::string HttpClient::post(const std::string &url, const std::string &params)
 {
+    std::string ret;
     Log::gdb("post url: &s", url.c_str());
 
-    struct MemoryStruct chunk;
+    pthread_mutex_lock(&Mtx);
 
-    chunk.memory = (char*)malloc(1);
-    chunk.size = 0;
+    struct MemoryStruct *chunk = new MemoryStruct();
 
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)chunk);
     curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
 //	curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, (void*)parms);
     curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, (void*)params.c_str());
@@ -136,13 +161,17 @@ std::string HttpClient::post(const std::string &url, const std::string &params)
 
     if(res != CURLE_OK)
     {
-        Log::err("curl_easy_perform failed: %s", curl_easy_strerror(res));
-        free(chunk.memory);
-        return "";
+        Log::err("cur failed: %s", curl_easy_strerror(res));
+    }
+    else
+    {
+        ret = std::string(chunk->buf,chunk->len);
     }
 
-    std::string ret = std::string(chunk.memory,chunk.size);
-    free(chunk.memory);
+    delete chunk;
+
+    pthread_mutex_unlock(&Mtx);
+
     return ret;
 }
 

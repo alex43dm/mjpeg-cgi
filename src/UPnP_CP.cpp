@@ -14,7 +14,7 @@ UPnP_CP::UPnP_CP(unsigned l_tmOut) :
 
 UPnP_CP::~UPnP_CP()
 {
-	//dtor
+	fExit = true;
 }
 
 bool UPnP_CP::SetRenderer(const std::string &id)
@@ -272,15 +272,26 @@ void *UPnP_CP::threadLoop()
 	return 0;
 }
 
-bool UPnP_CP::getAllImages(const std::string &fn)
+bool UPnP_CP::getAllImages(const std::string &dir)
 {
-    if(!next(fn))
+    if(!next(dir))
     {
-        Log::err("Not found directory: %s",fn.c_str());
+        Log::err("Not found directory: %s",dir.c_str());
         return false;
     }
 
-    return m_server->wgetCurDir(fn);
+    return m_server->wgetCurDir(dir);
+}
+
+std::string UPnP_CP::getLastImage(const std::string &dir)
+{
+    if(!next(dir))
+    {
+        Log::err("Not found directory: %s",dir.c_str());
+        return "";
+    }
+
+    return m_server->wgetLastImage(dir);
 }
 
 

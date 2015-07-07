@@ -71,7 +71,7 @@ void Log::gdb(const char* fmt, ... )
     vsprintf(buffer, fmt, args);
     va_end (args);
 
-    printf("%s",buffer);
+    printf("%s\n",buffer);
     syslog(LOG_DEBUG, "%s", buffer);
 #endif // DEBUG
 }
@@ -85,7 +85,7 @@ void Log::debug(const char* fmt, ... )
     vsprintf(buffer, fmt, args);
     va_end (args);
 
-    printf("%s",buffer);
+    printf("%s\n",buffer);
     syslog(LOG_DEBUG, "%s", buffer);
 #endif // DEBUG
 }

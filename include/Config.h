@@ -31,6 +31,10 @@ public:
     unsigned camWidth;
     unsigned camHeight;
 
+     std::string upnpListernIp;
+     std::string upnpMediaServerName;
+     std::string upnpSearchDir;
+
 
     static Config* Instance();
     bool LoadConfig(const std::string fName);

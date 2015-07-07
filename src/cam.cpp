@@ -8,6 +8,7 @@
 #include "Config.h"
 #include "Log.h"
 #include "ImgMgk.h"
+#include "UPnP_CP.h"
 
 using namespace panasonic;
 
@@ -97,7 +98,7 @@ std::string cam::request(const std::string &cmd)
 
     if( (mElem = camrply->FirstChildElement("result")) )
     {
-        return mElem->GetText();
+        return std::string(mElem->GetText());
     }
     else
     {
@@ -141,19 +142,14 @@ bool cam::stream(bool OnOff = true)
 
 bool cam::init()
 {
-    getState();
+    _pThShotId = 0;
+
+    getState(httpClient);
 
     std::string ret = request(CAM_CAPABILITY_REQUEST);
     if( ret == "ok")
     {
         Log::info("cam: state: connected");
-
-        getState();
-        if(!state.livestream)
-        {
-            Log::info("cam: livestream off");
-            return false;
-        }
     }
     else
     {
@@ -175,6 +171,14 @@ bool cam::init()
     */
     if(stream(true))
     {
+        getState(httpClient);
+
+        if(!state.livestream)
+        {
+            Log::info("cam: livestream off");
+            return false;
+        }
+
         if(pthread_create(&_pThread, NULL, &this->streamUpdate, this))
         {
             Log::err("creating thread failed");
@@ -192,13 +196,51 @@ void *cam::streamUpdate(void *data)
 {
     cam *c1 = (cam*)data;
 
+    HttpClient *ihc = new HttpClient();
+
     sleep(cfg->camAliveInterval);
+
     while(!c1->exit)
     {
-        c1->stream(true);
+        std::string temp = ihc->get("http://"+c1->address+CAM_STREAM+std::to_string(c1->localPort));
+
+        if(!temp.empty())
+        {
+            TiXmlDocument mDoc;
+            TiXmlElement *camrply, *result;
+
+            mDoc.Parse(temp.c_str(), 0 , TIXML_ENCODING_UTF8);
+
+            camrply = mDoc.FirstChildElement("camrply");
+
+            if(camrply)
+            {
+                if( (result = camrply->FirstChildElement("result")) )
+                {
+                    if(std::string(result->GetText()) != "ok")
+                    {
+                        Log::err("cam: state: stream error: %s",std::string(result->GetText()).c_str());
+                    }
+                }
+                else
+                {
+                    Log::err("does not found result section in: "+temp);
+                }
+            }
+            else
+            {
+                Log::err("does not found camrply section in: "+temp);
+            }
+        }
+
         sleep(cfg->camAliveInterval);
-        c1->getState();
+
+        c1->getState(ihc);
+
+        sleep(cfg->camAliveInterval);
     }
+
+    delete ihc;
 
     return NULL;
 }
@@ -291,12 +333,12 @@ void cam::reciever()
                         if(filterGray)
                         {
                             b1 = ImgMgk::gray(tempOutputStorage.c_str(),tempOutputStorage.size(),
-                                             Config::currentDateTime());
+                                              Config::currentDateTime());
                         }
                         else
                         {
                             b1 = ImgMgk::conv(tempOutputStorage.c_str(),tempOutputStorage.size(),
-                                             Config::currentDateTime());
+                                              Config::currentDateTime());
                         }
                         /*
                         if(filterMarkName)
@@ -331,9 +373,9 @@ void cam::reciever()
 }
 
 
-void cam::getState()
+void cam::getState(HttpClient *hc)
 {
-    std::string temp = httpClient->get("http://"+address+CAM_GETSTATE);
+    std::string temp = hc->get("http://"+address+CAM_GETSTATE);
 
     if(temp.empty())
     {
@@ -478,4 +520,61 @@ camMode cam::Mode(const std::string &mode)
         state.mode = camMode::xboxplay;
 
     return state.mode;
+}
+
+bool cam::takeAshot()
+{
+    if(flagImageRequest)
+    {
+        Log::err("Allredy process: get image");
+        return false;
+    }
+
+    flagImageRequest = true;
+    flagImageGet = false;
+
+    if(state.remaincapacity > 0)
+    {
+        bool res = request(CAM_TAKESHOT) == "ok" ? true : false;
+        if(res)
+        {
+            if(pthread_create(&_pThShotId, NULL, &this->getImage, this))
+            {
+                Log::err("creating UPnP_CP thread failed");
+            }
+        }
+    }
+
+    return false;
+}
+
+void *cam::getImage(void *data)
+{
+    cam *c1 = (cam*)data;
+
+    UPnP_CP *cp = new UPnP_CP(3);
+
+    if(!cp->init(cfg->upnpListernIp))
+    {
+        std::cout<<"UPnP_CP::init error. exit."<<std::endl;
+        return NULL;
+    }
+    else
+    {
+        cp->start();
+    }
+
+    while(!cp->SetServer(cfg->upnpMediaServerName))
+    {
+        sleep(1);
+    }
+
+    c1->ImageBuff = cp->getLastImage(cfg->upnpSearchDir);
+
+    c1->flagImageGet = true;
+    c1->flagImageRequest = false;
+
+    delete cp;
+
+    return NULL;
 }

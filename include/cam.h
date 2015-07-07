@@ -80,9 +80,13 @@ public:
     pthread_cond_t  CondVar;
     pthread_mutex_t Mtx;
     unsigned char *Buffer;
+    std::string ImageBuff;
     size_t Len;
     bool filterMarkName;
     bool filterGray;
+
+    bool flagImageGet;
+    bool flagImageRequest;
 
     cam(const std::string &address, unsigned short remotePort, unsigned short localPort);
     ~cam();
@@ -92,7 +96,7 @@ public:
     void reciever();
     bool stream(bool OnOff);
     int applyZoom(zoom_t lzoom);
-    bool takeAshot(){ return request(CAM_TAKESHOT) == "ok" ? true : false;}
+    bool takeAshot();
 protected:
     bool exit;
 private:
@@ -101,7 +105,7 @@ private:
     std::string request(const std::string &cmd);
     zoom_t zoom;
     sockaddr_in sa;
-    pthread_t _pThread;
+    pthread_t _pThread,_pThShotId;
     HttpClient *httpClient;
     unsigned short localPort;
     std::string address;
@@ -115,9 +119,11 @@ private:
 
     static void *streamUpdate(void*);
     std::string Mode();
-    void getState();
+    void getState(HttpClient *);
     void witeImage(const std::string &mes);
     camMode Mode(const std::string &mode);
+
+    static void *getImage(void *data);
 };
 }
 #endif

@@ -225,6 +225,13 @@ void CgiService::ProcessRequest(FCGX_Request *req)
                     resps.endMJPG();
                     return;
                 }
+
+                if(c1->flagImageGet)
+                {
+                    c1->flagImageGet = false;
+                    resps.sendMJPG(c1->ImageBuff);
+                    c1->ImageBuff.clear();
+                }
             }
             catch (std::exception const &ex)
             {

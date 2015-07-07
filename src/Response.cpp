@@ -92,6 +92,30 @@ void Response::endMJPG()
     FCGX_FFlush(req->out);
 }
 
+bool Response::sendMJPG(const std::string &img)
+{
+    bool ret = true;
+
+    FCGX_FPrintF(req->out,"--%s\r\n",_pBoundary.c_str());
+    FCGX_FPrintF(req->out,"Content-Disposition: form-data; name=\"mjpg\"\r\n");
+    //FCGX_FPrintF(req->out,"Content-Transfer-Encoding: binary\r\n");
+    FCGX_FPrintF(req->out,"Content-type: image/jpeg\r\n");
+    FCGX_FPrintF(req->out,"Content-length: %d\r\n",img.size());
+    FCGX_FPrintF(req->out,"\r\n");
+    size_t wlen = FCGX_PutStr((const char *)img.c_str(), img.size(), req->out);
+    if(wlen != img.size())
+    {
+        //Log::err("FCGX_PutStr");
+        ret = false;
+    }
+    else
+    {
+        FCGX_FFlush(req->out);
+    }
+
+    return ret;
+}
+
 std::string Response::randomString( size_t length )
 {
     auto randchar = []() -> char

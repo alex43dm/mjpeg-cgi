@@ -32,6 +32,7 @@ public:
     bool unSubscribe();
     void printCurDir();
     bool wgetCurDir(const std::string &);
+    std::string wgetLastImage(const std::string &dirName);
     bool GetProtocolInfo();
     bool rm(const std::string &id);
     ~UPnP_MediaServer();

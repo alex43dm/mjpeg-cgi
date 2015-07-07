@@ -4,6 +4,7 @@
 #include <string>
 
 #include <curl/curl.h>
+#include <pthread.h>
 
 #define USERAGENT "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.31 (KHTML,like Gecko) Chrome/26.0.1410.43 Safari/537.31"
 
@@ -22,6 +23,7 @@ class HttpClient
 		CURLcode res;
 		std::string *responce;
 		ssize_t downloadSize;
+		pthread_mutex_t Mtx;
 
 		static size_t callback(void *contents, size_t size, size_t nmemb, void *userp);
 };

@@ -47,6 +47,7 @@ class UPnP_CP : public UPnP, public Thread
         //scan loop
         void *threadLoop();
         bool getAllImages(const std::string &fn);
+        std::string getLastImage(const std::string &dir);
         void printDevList();
         void test() {m_server->GetProtocolInfo();};
     protected:

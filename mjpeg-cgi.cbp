@@ -68,7 +68,6 @@
 		<Unit filename="include/Uri.h" />
 		<Unit filename="include/base64.h" />
 		<Unit filename="include/cam.h" />
-		<Unit filename="include/cam.h" />
 		<Unit filename="include/xmltools.h" />
 		<Unit filename="index.html" />
 		<Unit filename="main.cpp" />

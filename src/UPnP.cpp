@@ -43,7 +43,7 @@ bool UPnP::init(const std::string &ip)
 {
 	int res;
 
-	if((res = UpnpInit(ip.c_str(), 0)) != UPNP_E_SUCCESS)
+	if((res = UpnpInit( !ip.empty() ? ip.c_str() : NULL, 0)) != UPNP_E_SUCCESS)
 	{
 		Log::err("UpnpInit error: %s",UpnpGetErrorMessage(res));
 		return false;

@@ -20,7 +20,8 @@
         <height>480</height>
     </camera>
     <upnp>
-        <ip></ip>
-        <MediaServerFriendlyName>V550628C30</MediaServerFriendlyName>
+        <listernIp></listenIp>
+        <mediaServerName>V550628C30</mediaServerName>
+        <searchDir>JPEG</searchDir>
     </upnp>
 </root>
