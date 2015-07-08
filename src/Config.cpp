@@ -167,7 +167,7 @@ bool Config::Load()
         exit("no camera section in config file. exit");
     }
 
-    if( (mElem = mRoot->FirstChildElement("upup")) )
+    if( (mElem = mRoot->FirstChildElement("upnp")) )
     {
         if( (mel = mElem->FirstChildElement("listernIp")) && (mel->GetText()) )
         {
@@ -184,7 +184,7 @@ bool Config::Load()
     }
     else
     {
-        exit("no upup section in config file. exit");
+        exit("no upnp section in config file. exit");
     }
 
     mIsInited = true;
