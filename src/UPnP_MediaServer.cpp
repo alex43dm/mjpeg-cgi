@@ -89,7 +89,7 @@ void UPnP_MediaServer::startRoot()
 
     if(verbose)
     {
-        std::cout<<pointer->getTitle()<<"."<<std::endl;
+        //std::cout<<pointer->getTitle()<<"."<<std::endl;
         printCurDir();
     }
 }
@@ -238,6 +238,9 @@ Item* UPnP_MediaServer::FindById(Container *c, std::string Id)
 
 bool UPnP_MediaServer::getMedia(Container* parent)
 {
+    if(parent == NULL)
+        return false;
+
     if(parent->isLoaded())
         return true;
 

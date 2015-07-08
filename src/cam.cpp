@@ -538,10 +538,12 @@ bool cam::takeAshot()
         bool res = request(CAM_TAKESHOT) == "ok" ? true : false;
         if(res)
         {
+            /*
             if(pthread_create(&_pThShotId, NULL, &this->getImage, this))
             {
                 Log::err("creating UPnP_CP thread failed");
             }
+            */
         }
     }
 
