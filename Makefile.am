@@ -28,7 +28,8 @@ src/Service.cpp
 
 
 INCLUDE=-Iinclude -I/usr/include
-DEBDEP=bash (>= 2.05a-11), awk, procps (>= 1:2.0.7-8), sed (>= 3.02-8), grep (>= 2.4.2-3), coreutils (>= 5.0-5)
+DEBDEP=bash (>= 2.05a-11), awk, procps (>= 1:2.0.7-8), sed (>= 3.02-8), grep (>= 2.4.2-3), coreutils (>= 5.0-5), libupnp6, curl, libfcgi0ldbl, libtinyxml2.6.2, imagemagick, libmagick++5
+
 BUILDDIR=$(PWD)/rpmbuild
 
 if DEBUG
@@ -45,34 +46,48 @@ endif
 
 AUTOMAKE_OPTIONS = subdir-objects
 
+Debug: all
+
+cleanDebug: clean
+
+debian_BUILD = $(bin_PROGRAMS)-$(VERSION)
+
 dist_doc_DATA=README
+
+sysconf_DATA= \
+index.html \
+js/jquery.min.js \
+js/jquery.timer.js
 
 install_f =\
 echo -n "install to $1"; \
-$(MKDIR_P) $(1)/usr/bin; \
-$(INSTALL) $(bin_PROGRAMS) $(1)/usr/bin; \
+$(MKDIR_P) $(1)/etc/$(bin_PROGRAMS)/js; \
+$(MKDIR_P) $(1)/etc/init.d; \
+$(MKDIR_P) $(1)/usr/sbin; \
+$(INSTALL) ./config.xml $(1)/etc/$(bin_PROGRAMS)/config.xml; \
+$(INSTALL) $(bin_PROGRAMS) $(1)/usr/sbin; \
+$(INSTALL) ./conf/mjpeg-cgi $(1)/etc/init.d/$(bin_PROGRAMS); \
+chmod +x  $(1)/etc/init.d/$(bin_PROGRAMS); \
+for p in $(sysconf_DATA); do \
+$(INSTALL_DATA) $$p "$(1)/etc/$(bin_PROGRAMS)/$$p" || exit $$?; \
+done; \
 echo "..ok"
 
 install: install-binPROGRAMS
 	@DOLLAR_SIGN@(call install_f,$(prefix))
 
-rpmbuild: $(bin_PROGRAMS) $(bin_PROGRAMS).spec
-	@echo VERSION $(VERSION)
-	@echo :Building RPM for $(bin_PROGRAMS)
-	@DOLLAR_SIGN@(call install_f,$(BUILDDIR)/BUILDROOT/$(bin_PROGRAMS)-$(VERSION)-$(RELEASE).$(ARCH))
-	@echo - Building the RPM
-	@echo Version : $(VERSION)
-	@rpmbuild --define "_topdir $(BUILDDIR)" \
-  --define "_builddir %{_topdir}" \
-  --define "_rpmdir %{_topdir}" \
-  --define "_srcrpmdir %{_topdir}" \
-  --define '_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm' \
-  --define "_specdir %{_topdir}" \
-  --define "_sourcedir  %{_topdir}" \
-  --define "release $(RELEASE)" \
-  --define "version $(VERSION)" \
-  -bb $(bin_PROGRAMS).spec
-
-Debug: all
-
-cleanDebug: clean
+deb: $(bin_PROGRAMS)
+	rm -rf $(debian_BUILD)
+	$(MKDIR_P) $(debian_BUILD)/DEBIAN
+	echo "Package: $(bin_PROGRAMS)">  $(debian_BUILD)/DEBIAN/control
+	echo "Version: $(VERSION)" >> $(debian_BUILD)/DEBIAN/control
+	echo "Section: base" >> $(debian_BUILD)/DEBIAN/control
+	echo "Priority: optional" >> $(debian_BUILD)/DEBIAN/control
+	echo "Architecture: all" >> $(debian_BUILD)/DEBIAN/control
+	echo "Depends: $(DEBDEP)" >> $(debian_BUILD)/DEBIAN/control
+	echo "Maintainer: Alex D <wvdial@gmail.com>" >> $(debian_BUILD)/DEBIAN/control
+	echo "Description:  multithread demon, to return html with video from nginx." >> $(debian_BUILD)/DEBIAN/control
+	@DOLLAR_SIGN@(call install_f,$(debian_BUILD))
+	cd $(debian_BUILD) &&  for p in `find . -type f -print | grep -v DEBIAN`; do md5sum $$p | sed 's|^.||' >>./DEBIAN/md5sum; done
+	dpkg-deb --build $(debian_BUILD)
+	rm -rf $(debian_BUILD)
