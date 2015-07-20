@@ -25,8 +25,8 @@
     position: static;
   }
 </style>
-<script src="http://localhost/jquery.min.js"></script>
-<script src="http://localhost/jquery.timer.js"></script>
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.timer.js"></script>
 <script>
 $(document).ready(function(){
 
@@ -37,54 +37,54 @@ $(document).ready(function(){
 
   timer.set({ time : 5000, autostart : false });
 
-  $('#mjpeg').append('<img width="640" height="480" border="0" src="http://localhost/mjpeg?action=stream" id="image">');
+  $('#mjpeg').append('<img width="640" height="480" border="0" src="/mjpeg?action=stream" id="image">');
   $('#image').load(function(){
     timer.reset();
   });
 
     $("#left").click(function(){
-        $.ajax({url: "http://localhost/mjpeg?action=control&dir=left", success: function(result){
+        $.ajax({url: "/mjpeg?action=control&dir=left", success: function(result){
         }});
     });
     $("#up").click(function(){
-        $.ajax({url: "http://localhost/mjpeg?action=control&dir=up", success: function(result){
+        $.ajax({url: "/mjpeg?action=control&dir=up", success: function(result){
         }});
     });
     $("#down").click(function(){
-        $.ajax({url: "http://localhost/mjpeg?action=control&dir=down", success: function(result){
+        $.ajax({url: "/mjpeg?action=control&dir=down", success: function(result){
         }});
     });
     $("#right").click(function(){
-        $.ajax({url: "http://localhost/mjpeg?action=control&dir=right", success: function(result){
+        $.ajax({url: "/mjpeg?action=control&dir=right", success: function(result){
         }});
     });
     $("#zoomin")
       .click(function(){
-        $.ajax({url: "http://localhost/mjpeg?action=control&dir=zoomin", success: function(result){
+        $.ajax({url: "/mjpeg?action=control&dir=zoomin", success: function(result){
         }});
     })
     $("#zoominfast").click(function(){
-        $.ajax({url: "http://localhost/mjpeg?action=control&dir=zoominfast", success: function(result){
+        $.ajax({url: "/mjpeg?action=control&dir=zoominfast", success: function(result){
         }});
     });
     $("#zoomout").click(function(){
-        $.ajax({url: "http://localhost/mjpeg?action=control&dir=zoomout", success: function(result){
+        $.ajax({url: "/mjpeg?action=control&dir=zoomout", success: function(result){
         }});
     });
     $("#zoomoutfast").click(function(){
-        $.ajax({url: "http://localhost/mjpeg?action=control&dir=zoomoutfast", success: function(result){
+        $.ajax({url: "/mjpeg?action=control&dir=zoomoutfast", success: function(result){
         }});
     });
     $("#zoomstop").click(function(){
-        $.ajax({url: "http://localhost/mjpeg?action=control&dir=zoomstop", success: function(result){
+        $.ajax({url: "/mjpeg?action=control&dir=zoomstop", success: function(result){
         }});
     });
     $("#shot").click(function(){
-        $.ajax({url: "http://localhost/mjpeg?action=control&dir=shot", success: function(result){
+        $.ajax({url: "/mjpeg?action=control&dir=shot", success: function(result){
         }});
     });
     $("#gray").click(function(){
-        $.ajax({url: "http://localhost/mjpeg?action=control&dir=gray", success: function(result){
+        $.ajax({url: "/mjpeg?action=control&dir=gray", success: function(result){
         }});
     });
 });
