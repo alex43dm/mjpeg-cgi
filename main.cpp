@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "config.h"
 #include "Log.h"
 #include "Config.h"

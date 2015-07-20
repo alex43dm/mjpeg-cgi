@@ -28,20 +28,20 @@ src/Service.cpp
 
 
 INCLUDE=-Iinclude -I/usr/include
-DEBDEP=bash (>= 2.05a-11), awk, procps (>= 1:2.0.7-8), sed (>= 3.02-8), grep (>= 2.4.2-3), coreutils (>= 5.0-5), libupnp6, curl, libfcgi0ldbl, libtinyxml2.6.2, imagemagick, libmagick++5
+DEBDEP=bash (>= 2.05a-11), awk, procps (>= 1:2.0.7-8), sed (>= 3.02-8), grep (>= 2.4.2-3), coreutils (>= 5.0-5), libupnp6, curl, libfcgi0ldbl, libtinyxml2.6.2, libmagick++5
 
 BUILDDIR=$(PWD)/rpmbuild
 
 if DEBUG
-AM_CXXFLAGS = -std=c++11 -g -O0 -Wall -DDEBUG $(INCLUDE) `Magick++-config --cppflags --cxxflags`
+AM_CXXFLAGS = -std=gnu++0x -g -O0 -Wall -DDEBUG $(INCLUDE) `Magick++-config --cppflags --cxxflags`
 bin_PROGRAMS = mjpeg-cgi-dev
 mjpeg_cgi_dev_SOURCES = $(SOURCES)
 mjpeg_cgi_dev_LDFLAGS = $(LD_ADD) `Magick++-config --ldflags --libs`
 else
-AM_CXXFLAGS = -std=c++11 -Wall  $(CFLAGS) $(INCLUDE)
+AM_CXXFLAGS = -std=gnu++0x -Wall  $(CFLAGS) $(INCLUDE) `Magick++-config --cppflags --cxxflags`
 bin_PROGRAMS = mjpeg-cgi
 mjpeg_cgi_SOURCES = $(SOURCES)
-mjpeg_cgi_LDFLAGS = $(LD_ADD)
+mjpeg_cgi_LDFLAGS = $(LD_ADD) `Magick++-config --ldflags --libs`
 endif
 
 AUTOMAKE_OPTIONS = subdir-objects
@@ -51,6 +51,8 @@ Debug: all
 cleanDebug: clean
 
 debian_BUILD = $(bin_PROGRAMS)-$(VERSION)
+
+MKDIR_P = mkdir -p
 
 dist_doc_DATA=README
 
@@ -64,6 +66,10 @@ echo -n "install to $1"; \
 $(MKDIR_P) $(1)/etc/$(bin_PROGRAMS)/js; \
 $(MKDIR_P) $(1)/etc/init.d; \
 $(MKDIR_P) $(1)/usr/sbin; \
+$(MKDIR_P) $(1)/var/www/js; \
+$(INSTALL) ./index.html $(1)/var/www; \
+$(INSTALL) ./js/jquery.min.js $(1)/var/www/js; \
+$(INSTALL) ./js/jquery.timer.js $(1)/var/www/js; \
 $(INSTALL) ./config.xml $(1)/etc/$(bin_PROGRAMS)/config.xml; \
 $(INSTALL) $(bin_PROGRAMS) $(1)/usr/sbin; \
 $(INSTALL) ./conf/mjpeg-cgi $(1)/etc/init.d/$(bin_PROGRAMS); \

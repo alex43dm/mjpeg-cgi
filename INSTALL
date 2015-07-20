@@ -140,6 +140,18 @@ is something like `gnu-as' or `x' (for the X Window System).  The
 `README' should mention any `--enable-' and `--with-' options that the
 package recognizes.
 
-RPM build
+Debian build
 ============
+#apt-get install libfcgi libfcgi-dev
+#apt-get install libtinyxml2.6.2 libtinyxml2-dev
+#apt-get install libupnp6 libupnp6-dev
+#apt-get install libcurl3-dev
+#ln -s /usr/lib/libtinyxml.so.2.6.2 /usr/lib/libtinyxml.so
+#ln -s /usr/include/tinyxml2.h /usr/include/tinyxml.h
+#apt-get install libmagick++5 libmagick++-dev
+#apt-cache search libtinyxml
 
+#systemctl enable /lib/systemd/system/mjpeg-cgi.service
+#systemctl status mjpeg-cgi.service
+#systemctl --system daemon-reload
+cp conf/nginx.conf /etc/nginx/sites-enabled/default 

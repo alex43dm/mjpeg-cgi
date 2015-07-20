@@ -29,6 +29,19 @@ CgiService::CgiService(unsigned threadsNumber, const std::string &serverSocketPa
     _pThreadsNumber(threadsNumber),
     _pServerSocketPath(serverSocketPath)
 {
+    unlink(_pServerSocketPath.c_str());
+
+    int lfp = open(_pServerSocketPath.c_str(),O_RDWR|O_CREAT,0640);
+
+    if(lfp < 0)
+    {
+      syslog(LOG_ERR, "unable to create lock file %s, code=%d (%s)",
+             _pServerSocketPath.c_str(), errno, strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+
+    unlink(_pServerSocketPath.c_str());
+
     FCGX_Init();
 
     mode_t old_mode = umask(0);
@@ -108,7 +121,7 @@ void *CgiService::Serve(void *data)
     sigset_t saved_mask;
     if (pthread_sigmask(SIG_BLOCK, &sigpipe_mask, &saved_mask) == -1)
     {
-        perror("pthread_sigmask");
+        Log::err("pthread_sigmask");
         exit(1);
     }
 
