@@ -23,7 +23,8 @@ src/Device.cpp  \
 src/Icon.cpp  \
 src/UPnP.cpp   \
 src/xmltools.cpp \
-src/Service.cpp
+src/Service.cpp \
+src/Serial.cpp
 
 
 

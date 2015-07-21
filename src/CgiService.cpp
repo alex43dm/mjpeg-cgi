@@ -83,6 +83,10 @@ CgiService::CgiService(unsigned threadsNumber, const std::string &serverSocketPa
     _pIndexHtml = Config::getFileContents(cfg->indexFile);
 
     c1 = new panasonic::cam(cfg->camIp,cfg->camPort,cfg->camJpgLocalPort);
+
+    rot = new Serial(cfg->rotatorDev,
+                cfg->rotatorSpeedX,cfg->rotatorShiftX,
+                cfg->rotatorSpeedY,cfg->rotatorShiftY);
 }
 
 void CgiService::run()
@@ -93,6 +97,7 @@ void CgiService::run()
 CgiService::~CgiService()
 {
     delete c1;
+    delete rot;
 
     for(unsigned i = 0; i < _pThreadsNumber; i++)
     {
@@ -167,19 +172,19 @@ void CgiService::ProcessRequest(FCGX_Request *req)
     {
         if(reqst.param("dir")=="up")
         {
-            std::cout<<"thread: "<<pthread_self()<<" control command: up"<<std::endl;
+            rot->Up();
         }
         else if(reqst.param("dir")=="down")
         {
-            std::cout<<"thread: "<<pthread_self()<<" control command: down"<<std::endl;
+            rot->Down();
         }
         else if(reqst.param("dir")=="left")
         {
-            std::cout<<"thread: "<<pthread_self()<<" control command: left"<<std::endl;
+            rot->Left();
         }
         else if(reqst.param("dir")=="right")
         {
-            std::cout<<"thread: "<<pthread_self()<<" control command: right"<<std::endl;
+            rot->Right();
         }
         else if(reqst.param("dir")=="zoomin")
         {

@@ -31,9 +31,13 @@ public:
     unsigned camWidth;
     unsigned camHeight;
 
-     std::string upnpListernIp;
-     std::string upnpMediaServerName;
-     std::string upnpSearchDir;
+    std::string upnpListernIp;
+    std::string upnpMediaServerName;
+    std::string upnpSearchDir;
+
+    std::string rotatorDev;
+    int8_t rotatorSpeedX, rotatorSpeedY;
+    uint32_t rotatorShiftX, rotatorShiftY;
 
 
     static Config* Instance();

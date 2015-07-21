@@ -7,6 +7,7 @@
 #include <fcgiapp.h>
 
 #include "cam.h"
+#include "Serial.h"
 
 class CgiService
 {
@@ -27,6 +28,7 @@ private:
     pthread_t *_pThreads;
     std::string _pIndexHtml;
     panasonic::cam *c1;
+    Serial *rot;
 
     static void SignalHandler(int signum);
 

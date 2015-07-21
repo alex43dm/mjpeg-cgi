@@ -40,7 +40,7 @@ void Config::exit(const std::string &mes)
 bool Config::Load()
 {
     TiXmlDocument *mDoc;
-    TiXmlElement *mRoot, *mElem, *mel;
+    TiXmlElement *mRoot, *mElem, *mel, *mel1;
 
     std::clog<<"open config file:"<<mFileName;
 
@@ -51,8 +51,8 @@ bool Config::Load()
     {
        cfgFilePath = std::string(_bn);
     }
-*/
     std::clog<<" config dir:"<<cfgFilePath<<std::endl;
+*/
 
     if(!(mDoc = new TiXmlDocument(mFileName)))
     {
@@ -185,6 +185,31 @@ bool Config::Load()
     else
     {
         exit("no upnp section in config file. exit");
+    }
+
+    if( (mElem = mRoot->FirstChildElement("rotator")) )
+    {
+        if( (mel = mElem->FirstChildElement("tty")) && (mel->GetText()) )
+        {
+            rotatorDev = mel->GetText();
+        }
+
+        if( (mel1 = mElem->FirstChildElement("x")) )
+        {
+            if( (mel = mElem->FirstChildElement("speed")) && (mel->GetText()) )
+            {
+                rotatorSpeedX = strtol(mel->GetText(),NULL,10);
+            }
+
+            if( (mel = mElem->FirstChildElement("shift")) && (mel->GetText()) )
+            {
+                rotatorShiftX = strtol(mel->GetText(),NULL,10);
+            }
+        }
+    }
+    else
+    {
+        exit("no rotator section in config file. exit");
     }
 
     mIsInited = true;

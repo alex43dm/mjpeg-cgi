@@ -24,4 +24,15 @@
         <mediaServerName>V550628C30</mediaServerName>
         <searchDir>JPEG</searchDir>
     </upnp>
+    <rotator>
+        <tty>/dev/ttyO4</tty>
+        <x>
+            <speed>3</speed>
+            <shift>200</shift>
+        </x>
+        <y>
+            <speed>3</speed>
+            <shift>200</shift>
+        </y>
+    </rotator>
 </root>
