@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <root id="0">
     <server>
-        <lock_file>/tmp/mjgpg-cgi/lock</lock_file>
-        <pid_file>/tmp/mjgpg-cgi/pid</pid_file>
+        <lock_file>/tmp/mjpeg-cgi/lock</lock_file>
+        <pid_file>/tmp/mjpeg-cgi/pid</pid_file>
         <user>alex</user>
         <group>www-data</group>
-        <socket_path>/tmp/mjgpg-cgi/sock</socket_path>
+        <socket_path>/tmp/mjpeg-cgi/sock</socket_path>
         <children>7</children>
         <fps>25</fps>
         <buffersize>65536</buffersize>
@@ -25,14 +25,15 @@
         <searchDir>JPEG</searchDir>
     </upnp>
     <rotator>
-        <tty>/dev/ttyO4</tty>
+        <!--tty>/dev/ttyO4</tty-->
+        <tty>/dev/ttyUSB0</tty>
         <x>
             <speed>3</speed>
-            <shift>200</shift>
+            <shift>2000</shift>
         </x>
         <y>
             <speed>3</speed>
-            <shift>200</shift>
+            <shift>2000</shift>
         </y>
     </rotator>
 </root>

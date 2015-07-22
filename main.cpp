@@ -1,13 +1,16 @@
 #include <iostream>
 
+#include <getopt.h>
+#include <unistd.h>
+
 #include "config.h"
 #include "Log.h"
 #include "Config.h"
 #include "Server.h"
 #include "CgiService.h"
+#ifdef HAVE_IMAGEMAGICK
 #include "ImgMgk.h"
-
-#include <getopt.h>
+#endif // HAVE_IMAGEMAGICK
 
 Config *cfg;
 
@@ -56,9 +59,9 @@ int main(int argc, char *argv[])
     {
         cfg->SocketPath = sock_path;
     }
-
+#ifdef HAVE_IMAGEMAGICK
     ImgMgk::init(argv);
-
+#endif // HAVE_IMAGEMAGICK
     CgiService(cfg->ServerThreads,cfg->SocketPath).run();
 
     return 0;

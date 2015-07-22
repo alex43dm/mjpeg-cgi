@@ -7,7 +7,9 @@
 
 #include "Config.h"
 #include "Log.h"
+#ifdef HAVE_IMAGEMAGICK
 #include "ImgMgk.h"
+#endif // HAVE_IMAGEMAGICK
 #include "UPnP_CP.h"
 
 using namespace panasonic;
@@ -286,11 +288,11 @@ void cam::reciever()
 
     //init image
     pthread_mutex_lock(&Mtx);
-
+#ifdef HAVE_IMAGEMAGICK
     Magick::Blob b1 = ImgMgk::def();
     Len = b1.length();
     memcpy(Buffer,b1.data(),Len);
-
+#endif
     pthread_cond_broadcast(&CondVar);
     pthread_mutex_unlock(&Mtx);
 
@@ -327,9 +329,9 @@ void cam::reciever()
                     else
                     {
                         tempOutputStorage.append(parserStorage, 0, pos + 2);
+#ifdef HAVE_IMAGEMAGICK
 
                         Magick::Blob b1;
-
                         if(filterGray)
                         {
                             b1 = ImgMgk::gray(tempOutputStorage.c_str(),tempOutputStorage.size(),
@@ -340,24 +342,18 @@ void cam::reciever()
                             b1 = ImgMgk::conv(tempOutputStorage.c_str(),tempOutputStorage.size(),
                                               Config::currentDateTime());
                         }
-                        /*
-                        if(filterMarkName)
-                        {
-                            b1 = ImgMgk::conv(tempOutputStorage.c_str(),tempOutputStorage.size(), "oNe");
-
-                        }
-                        else
-                        {
-                            Len = tempOutputStorage.size();
-                            memcpy(Buffer,tempOutputStorage.c_str(),Len);
-                        }*/
+#endif // HAVE_IMAGEMAGICK
 
                         //copy image for output
                         pthread_mutex_lock(&Mtx);
 
+#ifdef HAVE_IMAGEMAGICK
                         Len = b1.length();
                         memcpy(Buffer,b1.data(),Len);
-
+#else
+                        Len = tempOutputStorage.size();
+                        memcpy(Buffer,tempOutputStorage.c_str(),Len);
+#endif // HAVE_IMAGEMAGICK
                         pthread_cond_broadcast(&CondVar);
                         pthread_mutex_unlock(&Mtx);
 
@@ -499,11 +495,14 @@ void cam::getState(HttpClient *hc)
 void cam::witeImage(const std::string &mes)
 {
     pthread_mutex_lock(&Mtx);
-
+#ifdef HAVE_IMAGEMAGICK
     Magick::Blob b1 = ImgMgk::def(mes);
     Len = b1.length();
     memcpy(Buffer,b1.data(),Len);
-
+#else
+    Len = mes.size();
+    memcpy(Buffer,mes.c_str(),Len);
+#endif // HAVE_IMAGEMAGICK
     pthread_cond_broadcast(&CondVar);
     pthread_mutex_unlock(&Mtx);
 }

@@ -11,7 +11,6 @@ src/Config.cpp \
 src/Server.cpp \
 src/cam.cpp \
 src/HttpClient.cpp \
-src/ImgMgk.cpp \
 src/DeviceList.cpp  \
 src/Thread.cpp  \
 src/UPnP_MediaRenderer.cpp \
@@ -31,18 +30,22 @@ src/Serial.cpp
 INCLUDE=-Iinclude -I/usr/include
 DEBDEP=bash (>= 2.05a-11), awk, procps (>= 1:2.0.7-8), sed (>= 3.02-8), grep (>= 2.4.2-3), coreutils (>= 5.0-5), libupnp6, curl, libfcgi0ldbl, libtinyxml2.6.2, libmagick++5
 
-BUILDDIR=$(PWD)/rpmbuild
+if HAVE_IMAGEMAGICK
+MAGICK_INCLUDE = `Magick++-config --cppflags --cxxflags`
+MAGICK_LIB = `Magick++-config --ldflags --libs`
+SOURCES += src/ImgMgk.cpp
+endif
 
 if DEBUG
-AM_CXXFLAGS = -std=gnu++0x -g -O0 -Wall -DDEBUG $(INCLUDE) `Magick++-config --cppflags --cxxflags`
+AM_CXXFLAGS = -std=gnu++0x -g -O0 -Wall -DDEBUG $(INCLUDE) $(MAGICK_INCLUDE)
 bin_PROGRAMS = mjpeg-cgi-dev
 mjpeg_cgi_dev_SOURCES = $(SOURCES)
-mjpeg_cgi_dev_LDFLAGS = $(LD_ADD) `Magick++-config --ldflags --libs`
+mjpeg_cgi_dev_LDFLAGS = $(LD_ADD) $(MAGICK_LIB)
 else
-AM_CXXFLAGS = -std=gnu++0x -Wall  $(CFLAGS) $(INCLUDE) `Magick++-config --cppflags --cxxflags`
+AM_CXXFLAGS = -std=gnu++0x -Wall  $(CFLAGS) $(INCLUDE) $(MAGICK_INCLUDE)
 bin_PROGRAMS = mjpeg-cgi
 mjpeg_cgi_SOURCES = $(SOURCES)
-mjpeg_cgi_LDFLAGS = $(LD_ADD) `Magick++-config --ldflags --libs`
+mjpeg_cgi_LDFLAGS = $(LD_ADD) $(MAGICK_LIB)
 endif
 
 AUTOMAKE_OPTIONS = subdir-objects

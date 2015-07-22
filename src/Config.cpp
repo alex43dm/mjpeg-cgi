@@ -196,14 +196,27 @@ bool Config::Load()
 
         if( (mel1 = mElem->FirstChildElement("x")) )
         {
-            if( (mel = mElem->FirstChildElement("speed")) && (mel->GetText()) )
+            if( (mel = mel1->FirstChildElement("speed")) && (mel->GetText()) )
             {
                 rotatorSpeedX = strtol(mel->GetText(),NULL,10);
             }
 
-            if( (mel = mElem->FirstChildElement("shift")) && (mel->GetText()) )
+            if( (mel = mel1->FirstChildElement("shift")) && (mel->GetText()) )
             {
                 rotatorShiftX = strtol(mel->GetText(),NULL,10);
+            }
+        }
+
+        if( (mel1 = mElem->FirstChildElement("y")) )
+        {
+            if( (mel = mel1->FirstChildElement("speed")) && (mel->GetText()) )
+            {
+                rotatorSpeedY = strtol(mel->GetText(),NULL,10);
+            }
+
+            if( (mel = mel1->FirstChildElement("shift")) && (mel->GetText()) )
+            {
+                rotatorShiftY = strtol(mel->GetText(),NULL,10);
             }
         }
     }

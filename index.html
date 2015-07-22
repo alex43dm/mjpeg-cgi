@@ -30,18 +30,6 @@
 <script>
 $(document).ready(function(){
 
-  var timer = $.timer(function(){
-  //  alert('Timeout load video. Please, reload page');
-    location.reload();
-  });
-
-  timer.set({ time : 5000, autostart : false });
-
-  $('#mjpeg').append('<img width="640" height="480" border="0" src="/mjpeg?action=stream" id="image">');
-  $('#image').load(function(){
-    timer.reset();
-  });
-
     $("#left").click(function(){
         $.ajax({url: "/mjpeg?action=control&dir=left", success: function(result){
         }});
@@ -58,8 +46,7 @@ $(document).ready(function(){
         $.ajax({url: "/mjpeg?action=control&dir=right", success: function(result){
         }});
     });
-    $("#zoomin")
-      .click(function(){
+    $("#zoomin").click(function(){
         $.ajax({url: "/mjpeg?action=control&dir=zoomin", success: function(result){
         }});
     })
@@ -87,6 +74,20 @@ $(document).ready(function(){
         $.ajax({url: "/mjpeg?action=control&dir=gray", success: function(result){
         }});
     });
+
+  var timer = $.timer(function(){
+  //  alert('Timeout load video. Please, reload page');
+    location.reload();
+  });
+
+  timer.set({ time : 5000, autostart : false });
+
+  $('#mjpeg').append('<img width="640" height="480" border="0" src="/mjpeg?action=stream" id="image">');
+  $('#image').load(function(){
+    timer.reset();
+  });
+
+
 });
 </script>
 

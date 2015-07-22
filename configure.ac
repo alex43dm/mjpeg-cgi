@@ -31,6 +31,17 @@ CFLAGS=""
 CXXFLAGS=""
 fi
 
+AC_ARG_ENABLE(imagemagick,
+  AS_HELP_STRING([--enable-imagemagick],[enable imagemagick filter, default: false]),
+    [imagemagick=true ],
+    [imagemagick=false])
+
+AM_CONDITIONAL([HAVE_IMAGEMAGICK], test x"$imagemagick" = x"true")
+
+if test x$imagemagick == xtrue; then
+AC_DEFINE(HAVE_IMAGEMAGICK, 1, [imagemagick enable])
+fi
+
 AC_CHECK_LIB([pthread], [main])
 AC_CHECK_LIB([fcgi], [main])
 AC_CHECK_LIB([tinyxml], [main])

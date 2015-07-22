@@ -11,10 +11,10 @@ class Serial
         Serial(const std::string &portName, int8_t speedX, uint32_t shiftX, int8_t speedY, uint32_t shiftY);
         virtual ~Serial();
 
-        bool Up(){ return moveX(true);};
-        bool Down(){ return moveX(false);};
-        bool Left(){ return moveY(true);};
-        bool Right(){ return moveY(false);};
+        bool Up(){ return moveY(false);};
+        bool Down(){ return moveY(true);};
+        bool Left(){ return moveX(false);};
+        bool Right(){ return moveX(true);};
 
         bool moveX(bool direction = true);
         bool moveY(bool direction = true);
