@@ -30,6 +30,8 @@ class Serial
     protected:
     private:
         pthread_t m_threadId;
+        int8_t spX, spY;
+        uint32_t shX, shY;
 
         bool cmd(int8_t speedX, uint32_t x, int8_t speedY, uint32_t y);
         static void *internalThreadFunc(void *data);
