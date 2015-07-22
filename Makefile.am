@@ -78,6 +78,9 @@ $(INSTALL) ./config.xml $(1)/etc/$(bin_PROGRAMS)/config.xml; \
 $(INSTALL) $(bin_PROGRAMS) $(1)/usr/sbin; \
 $(INSTALL) ./conf/mjpeg-cgi $(1)/etc/init.d/$(bin_PROGRAMS); \
 chmod +x  $(1)/etc/init.d/$(bin_PROGRAMS); \
+$(INSTALL) ./conf/mjpeg-cgi.service /lib/systemd/system; \
+systemctl enable /lib/systemd/system/mjpeg-cgi.service; \
+useradd -G dialout www-data; \
 for p in $(sysconf_DATA); do \
 $(INSTALL_DATA) $$p "$(1)/etc/$(bin_PROGRAMS)/$$p" || exit $$?; \
 done; \

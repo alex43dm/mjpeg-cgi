@@ -58,6 +58,7 @@
 		<Unit filename="include/Log.h" />
 		<Unit filename="include/Request.h" />
 		<Unit filename="include/Response.h" />
+		<Unit filename="include/Serial.h" />
 		<Unit filename="include/Server.h" />
 		<Unit filename="include/Service.h" />
 		<Unit filename="include/Thread.h" />
@@ -83,6 +84,7 @@
 		<Unit filename="src/Log.cpp" />
 		<Unit filename="src/Request.cpp" />
 		<Unit filename="src/Response.cpp" />
+		<Unit filename="src/Serial.cpp" />
 		<Unit filename="src/Server.cpp" />
 		<Unit filename="src/Service.cpp" />
 		<Unit filename="src/Thread.cpp" />
@@ -91,7 +93,6 @@
 		<Unit filename="src/UPnP_MediaRenderer.cpp" />
 		<Unit filename="src/UPnP_MediaServer.cpp" />
 		<Unit filename="src/base64.cpp" />
-		<Unit filename="src/cam.cpp" />
 		<Unit filename="src/cam.cpp" />
 		<Unit filename="src/xmltools.cpp" />
 		<Extensions>

@@ -186,6 +186,10 @@ void CgiService::ProcessRequest(FCGX_Request *req)
         {
             rot->Right();
         }
+        else if(reqst.param("dir")=="rotstop")
+        {
+            rot->Stop();
+        }
         else if(reqst.param("dir")=="zoomin")
         {
             c1->applyZoom(panasonic::zoom_t::in);

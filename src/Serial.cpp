@@ -35,31 +35,54 @@ Serial::~Serial()
     close(fd);
 }
 
-bool Serial::cmd(int8_t speedX, uint32_t x, int8_t speedY, uint32_t y)
+void *Serial::internalThreadFunc(void *data)
 {
     bool ret = true;
-
-    Log::debug("serial cmd: speedX: %d x:%d speedY: %d y:%d", speedX, x, speedY, y);
-
-    pthread_mutex_lock(&Mtx);
-
     char pre = 0xaa;
-    if( write(fd,(void*)&pre,1) != 1 ) ret = false;
+    Serial *s = (Serial*)data;
 
-    if( write(fd,(void*)&speedX,1) != 1 )  ret = false;
-    if( write(fd,(void*)&x,4) != 4) ret = false;
+    while( !s->stop || ret)
+    {
+        pthread_mutex_lock(&s->Mtx);
 
-    if( write(fd,(void*)&speedY,1) != 1 )  ret = false;
-    if( write(fd,(void*)&y,4) != 4) ret = false;
+        if( write(s->fd,(void*)&pre,1) != 1 ) ret = false;
 
-    pthread_mutex_unlock(&Mtx);
+        if( write(s->fd,(void*)&s->speedX,1) != 1 )  ret = false;
+        if( write(s->fd,(void*)&s->shiftX,4) != 4) ret = false;
+
+        if( write(s->fd,(void*)&s->speedY,1) != 1 )  ret = false;
+        if( write(s->fd,(void*)&s->shiftY,4) != 4) ret = false;
+
+        pthread_mutex_unlock(&s->Mtx);
+
+        sleep(1);
+    }
 
     if(!ret)
     {
-        Log::err("write to device: %s",portName.c_str());
+        Log::err("write to device: %s",s->portName.c_str());
     }
 
-    return ret;
+    Log::debug("serial thread exit");
+
+    return 0;
+}
+
+bool Serial::cmd(int8_t speedX, uint32_t x, int8_t speedY, uint32_t y)
+{
+    Log::debug("serial cmd: speedX: %d x:%d speedY: %d y:%d", speedX, x, speedY, y);
+
+    if(stop)
+    {
+        pthread_create(&m_threadId, NULL, internalThreadFunc, this);
+    }
+    else
+    {
+        Log::err("serial run");
+        stop = false;
+    }
+
+    return true;
 }
 
 bool Serial::moveX(bool direction)
