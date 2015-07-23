@@ -1,0 +1,10 @@
+#!/bin/sh
+
+echo "PostInstall mjpeg-cgi package"
+
+echo "Add user www-data to group dialout for serial connection"
+useradd -G dialout www-data
+
+echo "enable mjpeg-cgi.service"
+systemctl enable /lib/systemd/system/mjpeg-cgi.service
+

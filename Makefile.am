@@ -78,9 +78,9 @@ $(INSTALL) ./config.xml $(1)/etc/$(bin_PROGRAMS)/config.xml; \
 $(INSTALL) $(bin_PROGRAMS) $(1)/usr/sbin; \
 $(INSTALL) ./conf/mjpeg-cgi $(1)/etc/init.d/$(bin_PROGRAMS); \
 chmod +x  $(1)/etc/init.d/$(bin_PROGRAMS); \
-$(INSTALL) ./conf/mjpeg-cgi.service /lib/systemd/system; \
-systemctl enable /lib/systemd/system/mjpeg-cgi.service; \
-useradd -G dialout www-data; \
+$(INSTALL) ./conf/mjpeg-cgi.service ($1)/lib/systemd/system; \
+$(INSTALL) ./conf/nginx.conf ($1)/etc/nginx/sites-enabled/default; \
+$(INSTALL) ./conf/wpa_cli.sh ($1)/etc/wpa_supplicant/wpa_cli.sh; \
 for p in $(sysconf_DATA); do \
 $(INSTALL_DATA) $$p "$(1)/etc/$(bin_PROGRAMS)/$$p" || exit $$?; \
 done; \
@@ -101,6 +101,7 @@ deb: $(bin_PROGRAMS)
 	echo "Maintainer: Alex D <wvdial@gmail.com>" >> $(debian_BUILD)/DEBIAN/control
 	echo "Description:  multithread demon, to return html with video from nginx." >> $(debian_BUILD)/DEBIAN/control
 	@DOLLAR_SIGN@(call install_f,$(debian_BUILD))
+	cp postinst  $(debian_BUILD)/DEBIAN/postinst
 	cd $(debian_BUILD) &&  for p in `find . -type f -print | grep -v DEBIAN`; do md5sum $$p | sed 's|^.||' >>./DEBIAN/md5sum; done
 	dpkg-deb --build $(debian_BUILD)
 	rm -rf $(debian_BUILD)

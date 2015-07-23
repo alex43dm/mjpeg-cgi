@@ -155,3 +155,8 @@ Debian build
 #systemctl status mjpeg-cgi.service
 #systemctl --system daemon-reload
 cp conf/nginx.conf /etc/nginx/sites-enabled/default 
+
+apt-get install libfcgi-dev
+apt-get install libtinyxml-dev
+apt-get install libcurl3-dev
+apt-get install libupnp-dev
