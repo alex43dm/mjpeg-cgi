@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <root id="0">
     <server>
-        <lock_file>/tmp/mjpeg-cgi/lock</lock_file>
-        <pid_file>/tmp/mjpeg-cgi/pid</pid_file>
-        <user>alex</user>
+        <lock_file>/run/mjpeg-cgi/lock</lock_file>
+        <pid_file>/run/mjpeg-cgi/pid</pid_file>
+        <user>www-data</user>
         <group>www-data</group>
         <socket_path>/tmp/mjpeg-cgi/sock</socket_path>
-        <children>7</children>
+        <children>3</children>
         <fps>25</fps>
         <buffersize>65536</buffersize>
-        <indexFile>/home/alex/Projects/mjpeg-cgi/index.html</indexFile>
+        <indexFile>/var/www/index.html</indexFile>
     </server>
     <camera>
         <ip>192.168.2.33</ip>
@@ -25,8 +25,7 @@
         <searchDir>JPEG</searchDir>
     </upnp>
     <rotator>
-        <!--tty>/dev/ttyO4</tty-->
-        <tty>/dev/ttyUSB0</tty>
+        <tty>/dev/ttyO4</tty>
         <x>
             <speed>3</speed>
             <shift>2000</shift>
