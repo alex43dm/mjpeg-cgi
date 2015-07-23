@@ -78,9 +78,9 @@ $(INSTALL) ./config.xml $(1)/etc/$(bin_PROGRAMS)/config.xml; \
 $(INSTALL) $(bin_PROGRAMS) $(1)/usr/sbin; \
 $(INSTALL) ./conf/mjpeg-cgi $(1)/etc/init.d/$(bin_PROGRAMS); \
 chmod +x  $(1)/etc/init.d/$(bin_PROGRAMS); \
-$(INSTALL) ./conf/mjpeg-cgi.service ($1)/lib/systemd/system; \
-$(INSTALL) ./conf/nginx.conf ($1)/etc/nginx/sites-enabled/default; \
-$(INSTALL) ./conf/wpa_cli.sh ($1)/etc/wpa_supplicant/wpa_cli.sh; \
+$(INSTALL) ./conf/mjpeg-cgi.service $(1)/lib/systemd/system; \
+$(INSTALL) ./conf/nginx.conf $(1)/etc/nginx/sites-enabled/default; \
+$(INSTALL) ./conf/wpa_cli.sh $(1)/etc/wpa_supplicant/wpa_cli.sh; \
 for p in $(sysconf_DATA); do \
 $(INSTALL_DATA) $$p "$(1)/etc/$(bin_PROGRAMS)/$$p" || exit $$?; \
 done; \
