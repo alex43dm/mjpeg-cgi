@@ -7,6 +7,7 @@ TimeoutStartSec=0
 PIDFile=/run/mjpeg-cgi/pid
 ExecStartPre=-/bin/rm -rf /run/mjpeg-cgi
 ExecStartPre=-/sbin/wpa_cli -i wlan0 -B -a /etc/wpa_supplicant/wpa_cli.sh
+ExecStartPre=-/etc/mjpeg-cgi/reconf
 ExecStartPre=-/bin/mkdir -p /run/mjpeg-cgi
 ExecStartPre=/bin/chown www-data:www-data /run/mjpeg-cgi
 ExecStart=/usr/sbin/mjpeg-cgi -c /etc/mjpeg-cgi/config.xml
